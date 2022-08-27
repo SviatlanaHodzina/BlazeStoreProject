@@ -1,0 +1,22 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="CrossBrowserAllContactModalWindowPageTests" thread-count="4" verbose="1">
+    <test name="MSedgeAllContactModalWindowPageTests">
+        <parameter name="browser" value="msedge"/>
+        <classes>
+            <class name="tests.ContactModalWindowPageTest"/>
+        </classes>
+    </test>
+    <test name="ChromeAllContactModalWindowPageTests">
+        <parameter name="browser" value="chrome"/>
+        <classes>
+            <class name="tests.ContactModalWindowPageTest"/>
+        </classes>
+    </test>
+    <test name="FirefoxAllContactModalWindowPageTests">
+        <parameter name="browser" value="firefox"/>
+        <classes>
+            <class name="tests.ContactModalWindowPageTest"/>
+        </classes>
+    </test>
+</suite>
