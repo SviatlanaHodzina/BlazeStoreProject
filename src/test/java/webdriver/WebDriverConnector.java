@@ -3,7 +3,6 @@ package webdriver;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
@@ -19,26 +18,44 @@ public class WebDriverConnector {
     @Parameters("browser")
     public static synchronized WebDriver getDriver(String browser) throws MalformedURLException {
         if (driver == null) {
+            DesiredCapabilities capabilities = new DesiredCapabilities();
             switch (System.getProperty(browser)) {
                 case "firefox": {
                     WebDriverManager.firefoxdriver().setup();
                     driver = new FirefoxDriver();
-                    break;
+                    capabilities.setCapability("browserName", "firefox");
+                    capabilities.setCapability("maxInstances", 5);
+                    capabilities.setCapability("seleniumProtocol", "Webdriver");
                 }
                 case "msedge": {
-                    WebDriverManager.edgedriver().driverVersion("104.0.1293.54").setup();
+                    WebDriverManager.edgedriver().setup();
                     driver = new EdgeDriver();
+                    capabilities.setCapability("browserName", "msedge");
+                    capabilities.setCapability("maxInstances", 1);
+                    capabilities.setCapability("seleniumProtocol", "Webdriver");
                     break;
                 }
-                case "chrome": {
-                    WebDriverManager.chromedriver().driverVersion("104.0.5112.79").setup();
+                case "chrome": {WebDriverManager.chromedriver().driverVersion("99.0.4844.51").setup();
+                    driver = new ChromeDriver(chromeOptions);
+                    WebDriverManager.chromedriver().setup();
                     driver = new ChromeDriver();
-                    break;
+                    capabilities.setCapability("browserName", "chrome");
+                    capabilities.setCapability("maxInstances", 5);
+                    capabilities.setCapability("seleniumProtocol", "Webdriver");
                 }
                 case "ie": {
                     WebDriverManager.iedriver().setup();
                     driver = new InternetExplorerDriver();
-                    break;
+                    capabilities.setCapability("browserName", "ie");
+                    capabilities.setCapability("maxInstances", 1);
+                    capabilities.setCapability("seleniumProtocol", "Webdriver");
+                }
+                case "safari": {
+                    WebDriverManager.safaridriver().setup();
+                    driver = new SafariDriver();
+                    capabilities.setCapability("browserName", "safari");
+                    capabilities.setCapability("maxInstances", 1);
+                    capabilities.setCapability("seleniumProtocol", "Webdriver");
                 }
             }
             driver.manage().window().maximize();
