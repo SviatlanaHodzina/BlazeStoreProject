@@ -23,7 +23,7 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
     }
 
     @Parameters("browser")
-    @Test(testName = "AboutUsModalWindowTitleTest", suiteName = "AboutUsModalWindowPageTest",
+    @Test(testName = "AboutUsModalWindowOpeningTestByTitle", suiteName = "AboutUsModalWindowPageTest",
             groups = {"positive"}, description = "Verifies if a user can open 'About us' modal " +
             "window link on top navigating menu with Video example")
     public void verifyThatUserCanOpenAboutUsModalWindowLinkOnTopNavigatingMenu() throws MalformedURLException {
@@ -36,6 +36,52 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
                 "or you've opened another link or the mentioned opened window has another title";
 
         assertEquals(errorMessageIfTestFails, expectedAboutUsModalWindowTitle, actualAboutUsModalWindowTitle);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "VideoPlayerWindowPresenceTest",
+            suiteName = "AboutUsModalWindowPageTest", groups = {"positive"},
+            description = "Verifies that the video player window is present in 'AboutUsModalWindow'")
+    public void verifyThatTheVideoPlayerIsPresentInAboutUsModalWindow()
+            throws MalformedURLException {
+
+        boolean videoPlayerIsPresentInTheAboutUsWindow = new AboutUsModalWindowPage()
+                .videoPlayerWindowIsPresentInTheAboutUsWindow();
+        String errorMessageIfTestFails = "Video player window is not displayed in the 'AboutUsWindowPage'";
+
+        assertTrue(errorMessageIfTestFails, videoPlayerIsPresentInTheAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "VideoExamplePresenceTest",
+            suiteName = "AboutUsModalWindowPageTest", groups = {"positive"},
+            description = "Verifies that the video example is present in 'AboutUsModalWindow'")
+    public void verifyThatTheVideoExampleIsPresentInAboutUsModalWindow()
+            throws MalformedURLException {
+
+        boolean videoExampleIsPresentInTheAboutUsWindow = new AboutUsModalWindowPage()
+                .videoExampleIsPresentInTheAboutUsWindow();
+        String errorMessageIfTestFails = "Video example is not displayed in the 'AboutUsWindowPage'";
+
+        assertTrue(errorMessageIfTestFails, videoExampleIsPresentInTheAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "VideoFileBlobURLTest",
+            suiteName = "AboutUsModalWindowPageTest", groups = {"positive"},
+            description = "Verifies that the actual video file complies with the resource file in generated Blob URL")
+    public void verifyThatActualVideoFileCompliesWithTheResourceFileInGeneratedBlobURL()
+            throws MalformedURLException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+
+        String actualVideoFile =
+                new AboutUsModalWindowPage()
+                        .getVideoFileResourceOfTheVideoExample();
+
+        String expectedVideoFile = resourceBundle.getString("VideoExampleVideoFileBlobURL");
+        String errorMessageIfTestFails = "Actual video file doesn't comply with the resource file in generated blob URL";
+
+        assertTrue(errorMessageIfTestFails, actualVideoFile.contains(expectedVideoFile));
     }
 
     @Parameters("browser")
@@ -59,14 +105,16 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
     public void verifyThatUserCanActivateFullscreenModeOfTheVideoExampleInAboutUsWindow()
             throws MalformedURLException {
 
-        boolean userCanActivateFullscreenModeOfTheVideoExampleInAboutUsWindow =
+        boolean fullscreenModeOfTheVideoExampleInAboutUsWindowIsActivated =
                 new AboutUsModalWindowPage()
-                        .activateFullscreenMode().fullscreenModeIsActivated();
+                        .startPlayingVideoExample()
+                        .activateFullscreenMode()
+                        .fullscreenModeIsActivated();
 
         String errorMessageIfTestFails = "The 'Fullscreen' mode of video example activation " +
                 "in 'About us' window isn't available.";
 
-        assertTrue(errorMessageIfTestFails, userCanActivateFullscreenModeOfTheVideoExampleInAboutUsWindow);
+        assertTrue(errorMessageIfTestFails, fullscreenModeOfTheVideoExampleInAboutUsWindowIsActivated);
     }
 
     @Parameters("browser")
@@ -77,14 +125,17 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
     public void verifyThatUserCanDeactivateFullscreenModeOfTheVideoExampleInAboutUsWindow()
             throws MalformedURLException {
 
-        boolean userCanDeactivateFullscreenModeOfTheVideoExampleInAboutUsWindow =
+        boolean fullscreenModeOfTheVideoExampleInAboutUsWindowIsDeactivated =
                 new AboutUsModalWindowPage()
-                        .deactivateFullscreenMode().fullscreenModeIsDeactivated();
+                        .startPlayingVideoExample()
+                        .activateFullscreenMode()
+                        .deactivateFullscreenMode()
+                        .fullscreenModeIsDeactivated();
 
         String errorMessageIfTestFails = "The 'Fullscreen' mode of video example deactivation " +
                 "in 'About us' window isn't available.";
 
-        assertTrue(errorMessageIfTestFails, userCanDeactivateFullscreenModeOfTheVideoExampleInAboutUsWindow);
+        assertTrue(errorMessageIfTestFails, fullscreenModeOfTheVideoExampleInAboutUsWindowIsDeactivated);
     }
 
     @Parameters("browser")
@@ -97,7 +148,9 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
 
         boolean userCanActivatePictureInPictureModeOfTheVideoExampleInAboutUsWindow =
                 new AboutUsModalWindowPage()
-                        .activatePictureInPictureMode().pictureInPictureModeIsActivated();
+                        .startPlayingVideoExample()
+                        .activatePictureInPictureMode()
+                        .pictureInPictureModeIsActivated();
 
         String errorMessageIfTestFails = "The 'Picture-in-Picture' mode of video example activation " +
                 "in 'About us' window isn't available.";
@@ -115,7 +168,10 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
 
         boolean userCanDeactivatePictureInPictureMode =
                 new AboutUsModalWindowPage()
-                        .deactivatePictureInPictureMode().pictureInPictureModeIsDeactivated();
+                        .startPlayingVideoExample()
+                        .activatePictureInPictureMode()
+                        .deactivatePictureInPictureMode()
+                        .pictureInPictureModeIsDeactivated();
 
         String errorMessageIfTestFails = "The 'Picture-in-Picture' mode of video example deactivation" +
                 "in 'About us' window isn't available.";
