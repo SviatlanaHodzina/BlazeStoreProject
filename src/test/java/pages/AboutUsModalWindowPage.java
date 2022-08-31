@@ -17,17 +17,18 @@ import static pages.HomePage.*;
 public class AboutUsModalWindowPage extends AbstractPage {
 
     public final Logger logger = LogManager.getRootLogger();
-    private final static String ABOUT_US_MODAL_WINDOW_SHOW_ELEMENT_XPATH = "//div[contains(@id,'videoModal') and contains(@class,'modal fade show')]";
-    public final static String VIDEO_PLAYER_WINDOW_ELEMENT_XPATH = "//*[@id='example-video_html5_api']";
-    public final static String VIDEO_EXAMPLE_IN_VIDEO_PLAYER_ELEMENT_XPATH = "//div[@id='example-video']";
+    public final static String ABOUT_US_MODAL_WINDOW_SHOW_ELEMENT_XPATH = "//div[contains(@id,'videoModal') and contains(@class,'modal fade show')]";
+    public final static String ABOUT_US_MODAL_WINDOW_CLOSED_ELEMENT_XPATH = "//div[contains(@id,'videoModal') and contains(@class,'modal fade')]";
+    public final static String VIDEO_EXAMPLE_IN_VIDEO_PLAYER_ELEMENT_XPATH = "//*[@id='example-video_html5_api']";
+    public final static String VIDEO_PLAYER_ELEMENT_XPATH = "//div[@id='example-video']";
     public final static String VIDEO_PLAYER_BIG_BUTTON_PLAY_VIDEO_ELEMENT_XPATH = "//button[@title='Play Video']";
-    public final static String VIDEO_PLAYER_CONTROL_BAR_ELEMENT_XPATH = "//div[@class='vjs-control-bar']";
-    public final static String VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_ELEMENT_XPATH = "//button[@title='Play']";
+    public final static String VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PAUSED_STATE_ELEMENT_XPATH = "//button[@title='Play']";
+    public final static String VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PLAYING_STATE_ELEMENT_XPATH = "//button[@title='Pause']";
     public final static String VIDEO_PLAYER_BUTTON_MUTE_IN_UNMUTED_STATUS_ELEMENT_XPATH = "//button[@title='Mute']";
     public final static String VIDEO_PLAYER_BUTTON_MUTE_IN_MUTED_STATUS_ELEMENT_XPATH = "//button[@title='Unmute']";
     public final static String VIDEO_PLAYER_PROGRESS_SLIDER_ELEMENT_XPATH = "//div[@aria-label='Progress Bar']";
-    public final static String VIDEO_PLAYER_VOLUME_SLIDER_ELEMENT_XPATH = "//div[@aria-label='Volume Level']";
-    public final static String VIDEO_PLAYER_REMAINING_TIME_IN_PLAYING_STATUS_ELEMENT_XPATH = "//div[@class='vjs-remaining-time vjs-time-control vjs-control']";
+    public final static String VIDEO_PLAYER_VOLUME_SLIDER_ELEMENT_XPATH = "//div[@aria-label='Volume Level']";// add method for the slider
+    public final static String VIDEO_PLAYER_REMAINING_TIME_IN_PLAYING_STATUS_ELEMENT_XPATH = "//div[@class='vjs-remaining-time vjs-time-control vjs-control']";// add method for the timer
     public final static String VIDEO_PLAYER_BUTTON_PICTURE_IN_PICTURE_IN_INACTIVE_MODE_IN_VIDEO_PLAYER_ELEMENT_XPATH = "//button[@title='Picture-in-Picture']";
     public final static String VIDEO_PLAYER_BUTTON_PICTURE_IN_PICTURE_IN_ACTIVE_MODE_ELEMENT_XPATH = "//button[@title='Exit Picture-in-Picture']";
     public final static String VIDEO_PLAYER_BUTTON_FULLSCREEN_IN_INACTIVE_FULLSCREEN_MODE_ELEMENT_XPATH = "//button[@title='Fullscreen']";
@@ -45,7 +46,7 @@ public class AboutUsModalWindowPage extends AbstractPage {
     public AboutUsModalWindowPage openPage() {
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.visibilityOfElementLocated
-                        (By.xpath(ABOUT_US_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+                        (By.xpath(ABOUT_US_MODAL_WINDOW_SHOW_ELEMENT_XPATH)));
         logger.info("You've navigated to 'About us' modal window");
         return this;
     }
@@ -55,8 +56,16 @@ public class AboutUsModalWindowPage extends AbstractPage {
                 .getAttribute("textContent");
     }
 
-    boolean videoPlayerWindowDoesExistInTheAboutUsWindow() {
-        return driver.findElement(xpath(VIDEO_PLAYER_WINDOW_ELEMENT_XPATH)).isDisplayed();
+    public boolean videoPlayerWindowIsPresentInTheAboutUsWindow() {
+        return driver.findElement(xpath(VIDEO_PLAYER_ELEMENT_XPATH)).isDisplayed();
+    }
+
+    public boolean videoExampleIsPresentInTheAboutUsWindow() {
+        return driver.findElement(xpath(VIDEO_PLAYER_ELEMENT_XPATH)).isDisplayed();
+    }
+
+    public String getVideoFileResourceOfTheVideoExample() {
+        return driver.findElement(xpath(VIDEO_EXAMPLE_IN_VIDEO_PLAYER_ELEMENT_XPATH)).getAttribute("currentSrc");
     }
 
     public AboutUsModalWindowPage startPlayingVideoExample() {
@@ -65,7 +74,7 @@ public class AboutUsModalWindowPage extends AbstractPage {
                         (By.xpath(VIDEO_PLAYER_BIG_BUTTON_PLAY_VIDEO_ELEMENT_XPATH))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.visibilityOfElementLocated
-                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_ELEMENT_XPATH)));
+                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PLAYING_STATE_ELEMENT_XPATH)));
         logger.info("The Video example has just started");
         return this;
     }
@@ -73,9 +82,31 @@ public class AboutUsModalWindowPage extends AbstractPage {
     public AboutUsModalWindowPage playVideoExampleFromControlBar() {
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.elementToBeClickable
-                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_ELEMENT_XPATH))).click();
-        logger.info("The Video example has just started");
+                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PAUSED_STATE_ELEMENT_XPATH))).click();
+        logger.info("The Video example has just started to play");
         return this;
+    }
+
+    public AboutUsModalWindowPage pauseVideoExampleFromControlBar() {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable
+                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PLAYING_STATE_ELEMENT_XPATH))).click();
+        logger.info("The Video example has just paused");
+        return this;
+    }
+
+    public boolean videoExampleIsPaused() {
+        return new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable
+                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PAUSED_STATE_ELEMENT_XPATH)))
+                .getAttribute("Title").matches("Play");
+    }
+
+    public boolean videoExampleIsPlaying() {
+        return new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable
+                        (By.xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_IN_PLAYING_STATE_ELEMENT_XPATH)))
+                .getAttribute("Title").matches("Pause");
     }
 
     //    look up timer methods to implement it with timer
@@ -84,14 +115,9 @@ public class AboutUsModalWindowPage extends AbstractPage {
                 .getAttribute("ariaValueNow").equals("0.00");
     }
 
-    boolean bigButtonPlayInVideoExampleIsClicked() {
-        return driver.findElement(xpath(VIDEO_PLAYER_BIG_BUTTON_PLAY_VIDEO_ELEMENT_XPATH))
-                .getAttribute("innerText").contains("Pause");
-    }
-
     public boolean bigButtonPlayInVideoExampleStartsTheVideoExample() {
         startPlayingVideoExample();
-        return !driver.findElement(xpath(VIDEO_PLAYER_CONTROL_BAR_BUTTON_PLAY_ELEMENT_XPATH))
+        return !driver.findElement(xpath(VIDEO_PLAYER_PROGRESS_SLIDER_ELEMENT_XPATH))
                 .getAttribute("ariaValueNow").equals("00.00");
     }
 
@@ -172,7 +198,7 @@ public class AboutUsModalWindowPage extends AbstractPage {
         return this;
     }
 
-    public boolean muteButtonIsInMutedStatusInTheVideoExample() {
+    public boolean videoExampleIsMuted() {
         return driver.findElement(xpath(VIDEO_PLAYER_BUTTON_MUTE_IN_MUTED_STATUS_ELEMENT_XPATH))
                 .getAttribute("textContent").contains("Unmute");
     }
@@ -188,9 +214,9 @@ public class AboutUsModalWindowPage extends AbstractPage {
         return this;
     }
 
-    public boolean muteButtonIsInUnmutedStatusInTheVideoExample() {
-        return driver.findElement(xpath(VIDEO_PLAYER_BUTTON_MUTE_IN_MUTED_STATUS_ELEMENT_XPATH))
-                .getAttribute("textContent").contains("Mute");
+    public boolean videoExampleIsUnmuted() {
+        return driver.findElement(xpath(VIDEO_PLAYER_BUTTON_MUTE_IN_UNMUTED_STATUS_ELEMENT_XPATH))
+                .getAttribute("title").contains("Mute");
     }
 
     public AboutUsModalWindowPage closeAboutUsWindowWithVideoExampleInTheFooter() {
@@ -198,8 +224,8 @@ public class AboutUsModalWindowPage extends AbstractPage {
                 .until(ExpectedConditions.elementToBeClickable
                         (By.xpath(ABOUT_US_BUTTON_CLOSE_FOOTER_ELEMENT_XPATH))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.invisibilityOfElementLocated
-                        (By.xpath(VIDEO_EXAMPLE_IN_VIDEO_PLAYER_ELEMENT_XPATH)));
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (By.xpath(ABOUT_US_MODAL_WINDOW_CLOSED_ELEMENT_XPATH)));
         return this;
     }
 
@@ -208,8 +234,12 @@ public class AboutUsModalWindowPage extends AbstractPage {
                 .until(ExpectedConditions.elementToBeClickable
                         (By.xpath(ABOUT_US_BUTTON_CLOSE_X_ONTOP_ELEMENT_XPATH))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.invisibilityOfElementLocated
-                        (By.xpath(VIDEO_EXAMPLE_IN_VIDEO_PLAYER_ELEMENT_XPATH)));
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (By.xpath(ABOUT_US_MODAL_WINDOW_CLOSED_ELEMENT_XPATH)));
         return this;
+    }
+
+    public boolean aboutUsModalWindowPageIsClosed() {
+        return driver.findElement(xpath(ABOUT_US_MODAL_WINDOW_CLOSED_ELEMENT_XPATH)).isDisplayed();
     }
 }
