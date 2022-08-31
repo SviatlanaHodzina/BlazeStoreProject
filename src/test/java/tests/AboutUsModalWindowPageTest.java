@@ -178,4 +178,92 @@ public class AboutUsModalWindowPageTest extends RequiredConditions {
 
         assertTrue(errorMessageIfTestFails, userCanDeactivatePictureInPictureMode);
     }
+
+    @Parameters("browser")
+    @Test(testName = "PauseVideoExampleTest", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the video example in 'About us' " +
+            "window can be paused")
+    public void verifyThatUserCanPauseVideoExampleInAboutUsWindow() throws MalformedURLException {
+
+        boolean videoExampleIsPausedInAboutUsWindow = new AboutUsModalWindowPage()
+                .startPlayingVideoExample()
+                .pauseVideoExampleFromControlBar()
+                .videoExampleIsPaused();
+
+        String errorMessageIfTestFails = "The Video example can't to be paused";
+
+        assertTrue(errorMessageIfTestFails, videoExampleIsPausedInAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "PlayVideoExampleFromControlBarTest", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the video example in 'About us' " +
+            "window can be played from the control bar")
+    public void verifyThatUserCanPlayVideoExampleFromControlBar() throws MalformedURLException {
+
+        boolean videoExampleIsPausedInAboutUsWindow = new AboutUsModalWindowPage()
+                .startPlayingVideoExample()
+                .pauseVideoExampleFromControlBar()
+                .playVideoExampleFromControlBar()
+                .videoExampleIsPlaying();
+        String errorMessageIfTestFails = "The Video example can't to be played";
+        assertTrue(errorMessageIfTestFails, videoExampleIsPausedInAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "MuteVideoExampleTest", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the video example in 'About us' " +
+            "window can be muted")
+    public void verifyThatUserCanMuteVideoExampleInAboutUsWindow() throws MalformedURLException {
+
+        boolean videoExampleIsMutedInAboutUsWindow = new AboutUsModalWindowPage()
+                .startPlayingVideoExample()
+                .muteTheAudioStreamInTheVideoExample()
+                .videoExampleIsMuted();
+
+        String errorMessageIfTestFails = "The Video example can't to be muted";
+        assertTrue(errorMessageIfTestFails, videoExampleIsMutedInAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "UnMuteVideoExampleTest", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the video example in 'About us' " +
+            "window can be unmuted")
+    public void verifyThatUserCanUnMuteVideoExampleInAboutUsWindow() throws MalformedURLException {
+
+        boolean videoExampleIsUnMutedInAboutUsWindow = new AboutUsModalWindowPage()
+                .startPlayingVideoExample()
+                .muteTheAudioStreamInTheVideoExample()
+                .unmuteTheAudioStreamInTheVideoExample()
+                .videoExampleIsUnmuted();
+
+        String errorMessageIfTestFails = "The Video example can't to be unmuted";
+        assertTrue(errorMessageIfTestFails, videoExampleIsUnMutedInAboutUsWindow);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "ClosingAboutUsModalWindowInTheFooterTest", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the 'AboutUsModalWindow' can be closed in the footer")
+    public void verifyThatUserCanCloseAboutUsWindowInTheFooter() throws MalformedURLException {
+
+        boolean aboutUsModalWindowPageIsClosedFromTheFooter = new AboutUsModalWindowPage()
+                .closeAboutUsWindowWithVideoExampleInTheFooter()
+                .aboutUsModalWindowPageIsClosed();
+
+        String errorMessageIfTestFails = "The AboutUsModalWindow can't be closed from the footer";
+        assertTrue(errorMessageIfTestFails, aboutUsModalWindowPageIsClosedFromTheFooter);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "ClosingAboutUsModalWindowOnTop", suiteName = "AboutUsModalWindowPageTest",
+            groups = {"positive"}, description = "Verifies if the 'AboutUsModalWindow' can be closed on top")
+    public void verifyThatUserCanCloseAboutUsWindowOnTop() throws MalformedURLException {
+
+        boolean aboutUsModalWindowPageIsClosedFromOnTop = new AboutUsModalWindowPage()
+                .closeAboutUsWindowWithVideoExampleOnTop()
+                .aboutUsModalWindowPageIsClosed();
+
+        String errorMessageIfTestFails = "The AboutUsModalWindow can't be closed from on top";
+        assertTrue(errorMessageIfTestFails, aboutUsModalWindowPageIsClosedFromOnTop);
+    }
 }
