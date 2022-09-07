@@ -53,5 +53,3 @@ All test methods in ContactModalWindowPageTest.java are verified and the results
 
 Test Results with failed test-cases in class ContactModalWindowPageTest.
 Other test cases are going to be verified in the following process
-
-Instructions on running the tests will be displayed here later.
