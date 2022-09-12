@@ -1,4 +1,7 @@
 # BlazeStoreProject
+
+The website project is under development.
+
 Given the site https://www.demoblaze.com/index.html
 
    It is required:
