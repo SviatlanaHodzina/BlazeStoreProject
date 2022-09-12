@@ -1,18 +1,28 @@
 package pages;
 
 import customer.Customer;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.time.Duration;
 
 import static org.openqa.selenium.By.xpath;
+import static pages.CustomerAccountPage.CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH;
 import static pages.HomePage.*;
 
 public class LogInModalWindowPage extends AbstractPage {
@@ -21,7 +31,8 @@ public class LogInModalWindowPage extends AbstractPage {
     private final static String LOG_IN_PAGE_MODAL_WINDOW_SHOW_ELEMENT_XPATH = "//div[contains(@id,'logInModal') and contains(@class,'modal fade show')]";
     private final static String LOG_IN_PAGE_USERNAME_PLACEHOLDER_ELEMENT_XPATH = "//input[@id='loginusername']";
     private final static String LOG_IN_PAGE_PASSWORD_PLACEHOLDER_ELEMENT_XPATH = "//input[@id='loginpassword']";
-    private final static String LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH = "//div[@id='logInModal']//button[@onclick='logIn()']";
+    final static String LOG_IN_PAGE_BUTTON_LOG_IN_MODAL_ELEMENT_XPATH = "//div[@id='logInModal']//button[@onclick='logIn()']";
+    final static String LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH = "//a[@id='login2']";
     private final static String LOG_IN_PAGE_BUTTON_CLOSE_FOOTER_ELEMENT_XPATH = "//div[@id='logInModal']//button[@class='btn btn-secondary']";
     private final static String LOG_IN_PAGE_BUTTON_CLOSE_X_ONTOP_ELEMENT_XPATH = "//div[@id='logInModal']//button[@class='close']";
 
@@ -57,7 +68,7 @@ public class LogInModalWindowPage extends AbstractPage {
 
     public String getInputUsername() {
         return driver.findElement(xpath(LOG_IN_PAGE_USERNAME_PLACEHOLDER_ELEMENT_XPATH))
-                .getAttribute("textContent");
+                .getAttribute("value");
     }
 
     public LogInModalWindowPage inputPassword(Customer account) {
@@ -71,82 +82,97 @@ public class LogInModalWindowPage extends AbstractPage {
 
     public String getInputPassword() {
         return driver.findElement(xpath(LOG_IN_PAGE_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))
-                .getAttribute("textContent");
+                .getAttribute("value");
     }
 
-    public CustomerAccountPage LogIn(Customer account) throws MalformedURLException {
+    //modified due to a developer's change of skipping alert message
+    public CustomerAccountPage logIn(Customer account) throws MalformedURLException {
         inputUsername(account);
         inputPassword(account);
-        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonLogIn.click();
+        pushLogInButton();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.alertIsPresent()).accept();
-        logger.info("You have logged in your account");
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (By.xpath(CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH)));
+        logger.info("You have logged in your account.");
         return new CustomerAccountPage();
     }
 
-    public LogInModalWindowPage LogInWithEmptyUsername(Customer account) {
+    public LogInModalWindowPage logInWithEmptyUsername(Customer account) {
         inputPassword(account);
-        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonLogIn.click();
+        pushLogInButton();
+        acceptAlertOnLogIn();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.alertIsPresent()).accept();
-        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.elementToBeClickable
-                        (xpath(LOG_IN_PAGE_USERNAME_PLACEHOLDER_ELEMENT_XPATH))).click();
-        logger.info("Username input field is empty. Please, fill out empty field.");
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to Log in registration window.");
         return this;
     }
 
-    public LogInModalWindowPage LogInWithEmptyPassword(Customer account) {
+    public LogInModalWindowPage logInWithEmptyPassword(Customer account) {
         inputUsername(account);
-        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonLogIn.click();
+        pushLogInButton();
+        acceptAlertOnLogIn();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.alertIsPresent()).accept();
-        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.elementToBeClickable
-                        (xpath(LOG_IN_PAGE_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))).click();
-        logger.info("Username input field is empty. Please, fill out empty field.");
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to Log in registration window.");
         return this;
     }
 
-    public LogInModalWindowPage LogInWithNonExistingUsername(Customer account) {
+    public LogInModalWindowPage logInWithNonRegisteredUsername(Customer account) {
         inputUsername(account);
         inputPassword(account);
-        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonLogIn.click();
+        pushLogInButton();
+        acceptAlertOnLogIn();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.alertIsPresent()).accept();
-        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.elementToBeClickable
-                        (xpath(LOG_IN_PAGE_USERNAME_PLACEHOLDER_ELEMENT_XPATH))).click();
-        logger.info("This username does not exist. Please, input a registered username.");
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (xpath(LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to Log in registration window.");
         return this;
     }
 
     //    here  there should be implemented features on website for resetting password or recovering it via
     //    different recovering options: phone number (call or sms), another email address, etc
-    public LogInModalWindowPage LogInWithWrongPassword(Customer account) {
+    public LogInModalWindowPage logInWithWrongPassword(Customer account) {
         inputUsername(account);
         inputPassword(account);
-        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonLogIn.click();
+        pushLogInButton();
+        acceptAlertOnLogIn();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.alertIsPresent()).accept();
-        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.elementToBeClickable
-                        (xpath(LOG_IN_PAGE_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))).click();
-        logger.info("Password is wrong. Try again.");
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to Log in registration window.");
         return this;
     }
 
-    public String getAlertMessageResponseOnLogInActionWithErrors(Customer account) {
-        inputUsername(account);
-        inputPassword(account);
-        WebElement buttonSendMessage = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_ELEMENT_XPATH));
-        buttonSendMessage.click();
+    public LogInModalWindowPage pushLogInButton() {
+        WebElement buttonLogIn = driver.findElement(xpath(LOG_IN_PAGE_BUTTON_LOG_IN_MODAL_ELEMENT_XPATH));
+        buttonLogIn.click();
+        return this;
+    }
+
+    public String getAlertMessageResponseToLogInAction() {
         return new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.alertIsPresent()).getText();
+    }
+
+    public LogInModalWindowPage acceptAlertOnLogIn() {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.alertIsPresent()).accept();
+        logger.info("Alert window with the response message to 'Log in' is accepted");
+        return this;
+    }
+
+    public boolean logInRegistrationWindowIsDisplayed() {
+        return driver.findElement(By.xpath(LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)).isDisplayed();
+    }
+
+    public void openNewTabByRobot() throws AWTException {
+        Robot robot = new Robot();
+        robot.keyPress(KeyEvent.VK_CONTROL);
+        robot.keyPress(KeyEvent.VK_T);
+        robot.keyRelease(KeyEvent.VK_T);
+        robot.keyRelease(KeyEvent.VK_CONTROL);
+        logger.info("New tab is opened");
     }
 }
