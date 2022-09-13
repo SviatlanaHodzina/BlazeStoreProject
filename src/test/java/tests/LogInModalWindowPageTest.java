@@ -26,7 +26,8 @@ import java.util.ResourceBundle;
 
 import static org.testng.AssertJUnit.*;
 
-// Webside project is under development.
+// add API test methods verifying response code
+// add other methods from LogIn page
 public class LogInModalWindowPageTest extends RequiredConditions {
     @Parameters("browser")
     @BeforeTest
