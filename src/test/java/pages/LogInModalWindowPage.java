@@ -22,7 +22,7 @@ import java.net.MalformedURLException;
 import java.time.Duration;
 
 import static org.openqa.selenium.By.xpath;
-import static pages.CustomerAccountPage.CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH;
+import static pages.CustomerAccountPage.CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_DISPLAYED_IN_NAVIGATING_MENU_ELEMENT_XPATH;
 import static pages.HomePage.*;
 
 public class LogInModalWindowPage extends AbstractPage {
@@ -92,7 +92,7 @@ public class LogInModalWindowPage extends AbstractPage {
         pushLogInButton();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.visibilityOfElementLocated
-                        (By.xpath(CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH)));
+                        (By.xpath(CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_DISPLAYED_IN_NAVIGATING_MENU_ELEMENT_XPATH)));
         logger.info("You have logged in your account.");
         return new CustomerAccountPage();
     }
@@ -173,6 +173,13 @@ public class LogInModalWindowPage extends AbstractPage {
         robot.keyPress(KeyEvent.VK_T);
         robot.keyRelease(KeyEvent.VK_T);
         robot.keyRelease(KeyEvent.VK_CONTROL);
+        logger.info("New tab is opened");
+    }
+
+    // open new tab via Action class doesn't work
+    public void openNewTabByAction() {
+        Actions act = new Actions(driver);
+        act.keyDown(Keys.CONTROL).sendKeys("t").keyUp(Keys.CONTROL).build().perform();
         logger.info("New tab is opened");
     }
 }
