@@ -1,4 +1,7 @@
 # BlazeStoreProject
+
+The website project is under the development. 
+
 Given the site https://www.demoblaze.com/index.html
 
    It is required:
@@ -47,8 +50,4 @@ Additionally RiskRegister-BlazeStore.xlsx uploaded with included tables:
 
 + Test status reporting.
 
-P.S. About test-cases: 
-All test methods in ContactModalWindowPageTest.java are verified and the results are put in the uploaded here folder
-
-Test Results with failed test-cases in class ContactModalWindowPageTest.
-Other test cases are going to be verified in the following process
+P.S. Here are Test Results with failed and passed tests in the relevant folders.
