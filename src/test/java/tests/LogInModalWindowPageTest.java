@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 
 import static org.testng.AssertJUnit.*;
 
+// aWebsite project is under development
 public class LogInModalWindowPageTest extends RequiredConditions {
     @Parameters("browser")
     @BeforeTest
@@ -101,7 +102,7 @@ public class LogInModalWindowPageTest extends RequiredConditions {
                 .openLogInModalWindowOnTopMenu();
         new LogInModalWindowPage().logIn(account);
 
-        boolean usernameAccountIsDisplayed = new CustomerAccountPage().userameLinkInPlaceOfSignUpLinkIsDisplayed();
+        boolean usernameAccountIsDisplayed = new CustomerAccountPage().usernameLinkInPlaceOfSignUpLinkIsDisplayed();
         String errorMessageIfTestFails = "Unexpected result: User can re-'Log in' the same account without the prior 'Log out'.";
 
         assertFalse(errorMessageIfTestFails, usernameAccountIsDisplayed);
