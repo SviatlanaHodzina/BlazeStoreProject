@@ -1,299 +1,190 @@
-package tests;
+package pages;
 
 import customer.Customer;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.openqa.selenium.edge.AddHasCasting;
-import org.testng.AssertJUnit;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Parameters;
-import org.testng.annotations.Test;
-import pages.CustomerAccountPage;
-import pages.HomePage;
-import pages.SignUpModalWindowPage;
-import storedataservice.CustomerAccountCompiler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.PageFactory;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import sun.misc.SignalHandler;
 import utils.StringUtils;
 
-import java.awt.*;
-import java.io.IOException;
 import java.net.MalformedURLException;
+import java.time.Duration;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import static org.testng.AssertJUnit.*;
+import static org.openqa.selenium.By.xpath;
+import static pages.CustomerAccountPage.CUSTOMER_ACCOUNT_PAGE_USERNAME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH;
+import static pages.HomePage.*;
+import static utils.StringUtils.generateRandomWeakPasswordWithRandomLength;
 
-// There should be additionally developed features on 'Sign up' and 'Log in' register forms such as:
-// - 'Sign up with email address or phone number';
-// - 'Account recovery options: email, phone number';
-// - 'Two-factor authentication (2FA);
-// - Documents references: 'Privacy policy', 'Services agreement', 'Terms of services';
-// The website is under development process: API test methods verifying response code don't work.
+// Strong password feature is not implemented yet by a developer.
+// The method for getting a weak password input warning message is reserved for the future feature.
+public class SignUpModalWindowPage extends AbstractPage {
+    public final Logger logger = LogManager.getRootLogger();
+    public final static String SIGN_UP_MODAL_WINDOW_TITLE_ELEMENT_XPATH = "//*[@id='signInModalLabel']";
+    public final static String SIGN_UP_USERNAME_PLACEHOLDER_ELEMENT_XPATH = "//input[@id='sign-username']";
+    public final static String SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH = "//input[@id='sign-password']";
+    public final static String SIGN_UP_BUTTON_ELEMENT_XPATH = "//button[@onclick='register()']";
+    public final static String SIGN_UP_WEAK_PASSWORD_WARNING_MESSAGE_ELEMENT_XPATH = "//here input XPATH for the future implemented element";
 
-public class SignUpModalWindowPageTest extends RequiredConditions {
-    @Parameters("browser")
-    @BeforeTest
-    public void openSignUpModalWindow() throws MalformedURLException {
-        new HomePage()
-                .openPage()
-                .openSignUpModalWindowOnTopMenu();
+
+    public SignUpModalWindowPage() throws MalformedURLException {
+        super();
+        PageFactory.initElements(this.driver, this);
     }
 
-    @Parameters("browser")
-    @Test(testName = "SignUpModalWindowPageTitleTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies the title of the 'Sign up' modal window page")
-    public void verifyTheTitleOfSignUpModalWindow() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
-
-        String actualSignUpModalWindowTitle = new SignUpModalWindowPage().getSignUpModalWindowTitle();
-        String expectedSignUpModalWindowTitle = resourceBundle.getString("SignUpLinkTopNavigatingMenu");
-        String errorMessageIfTestFails = "You've opened not the 'Sign up' modal window page" +
-                "or the 'Sign up' window page has another title";
-
-        assertEquals(errorMessageIfTestFails, expectedSignUpModalWindowTitle, actualSignUpModalWindowTitle);
+    @Override
+    public SignUpModalWindowPage openPage() {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (By.xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've navigated to 'Sign up' modal window");
+        return this;
     }
 
-    @Test(testName = "InputUsernameInSignUpModalWindowTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies that a customer can input username in 'Sign up' form in Sign up modal window")
-    public void verifyThatCustomerCanInputUsernameInSignUpRegisterForm() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        String actualInputUsernameInSignUpForm = new SignUpModalWindowPage()
-                .inputGeneratedUsernameForInSignUpForm()
-                .getInputUsernameInSignUpForm();
-        String expectedInputUsernameInSignUpForm = account.getFirstName()
-                .concat(" ").concat(account.getSurname());
-        String errorMessageIfTestFails = "The displayed username in 'Sign up' register form is not that was actually input";
-
-        assertEquals(errorMessageIfTestFails, expectedInputUsernameInSignUpForm, actualInputUsernameInSignUpForm);
+    public String getSignUpModalWindowTitle() {
+        return driver.findElement(xpath(SIGN_UP_MODAL_WINDOW_TITLE_ELEMENT_XPATH))
+                .getAttribute("textContent");
     }
 
-    @Test(testName = "StrongPasswordInputInSignUpModalWindowTest", suiteName = "InSignUpPageTest", groups = {"positive"},
-            description = "Verifies that the input password in 'Sign up' form is strong enough .")
-    public void verifyThatTheInputPasswordInSignUpFormIsStrong() throws MalformedURLException {
-
-        new SignUpModalWindowPage()
-                .inputGeneratedStrongPasswordInSignUpForm();
-
-        boolean theInputPasswordInSignUpFormIsStrong = new SignUpModalWindowPage().theInputPasswordInSignUpFormIsStrong();
-        String errorMessageIfTestFails = "The input password in 'Sign up' form is not enough strong.";
-
-        assertTrue(errorMessageIfTestFails, theInputPasswordInSignUpFormIsStrong);
+    public SignUpModalWindowPage inputUsernameInSignUpForm(Customer account) {
+        WebElement usernameSignUpPlaceholder = driver.findElement(By.xpath(SIGN_UP_USERNAME_PLACEHOLDER_ELEMENT_XPATH));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable(usernameSignUpPlaceholder)).click();
+        usernameSignUpPlaceholder.sendKeys(account.getFirstName().concat(" ").concat(account.getSurname()));
+        logger.info("Entered username is " + usernameSignUpPlaceholder.getAttribute("value"));
+        return this;
     }
 
-    @Test(testName = "SignUpTestViaChangingSignUpLinkNameOnTopMenuToUsernameLink", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies that 'Sign up' link changes to 'Username' link after successful Sign up action.")
-    public void verifyTheSignUpSuccessViaDisplayingUsernameLink() throws MalformedURLException {
-
-        new SignUpModalWindowPage().signUp();
-        boolean usernameRegisteredOnTopMenuIsNotDisplayed =
-                new CustomerAccountPage().usernameLinkInPlaceOfSignUpLinkIsNotDisplayed();
-        String errorMessageIfTestFails = "'Sign up' failed or the registered username is not displayed on top menu .";
-
-        AssertJUnit.assertFalse(errorMessageIfTestFails, usernameRegisteredOnTopMenuIsNotDisplayed);
+    public SignUpModalWindowPage inputGeneratedUsernameForInSignUpForm() {
+        WebElement usernameSignUpPlaceholder = driver.findElement(By.xpath(SIGN_UP_USERNAME_PLACEHOLDER_ELEMENT_XPATH));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable(usernameSignUpPlaceholder)).click();
+        usernameSignUpPlaceholder.sendKeys(StringUtils.generateRandomStringUsernameLength().concat(" ")
+                .concat(StringUtils.generateRandomStringUsernameLength()));
+        logger.info("Entered username is " + usernameSignUpPlaceholder.getAttribute("value"));
+        return this;
     }
 
-    // run this test only after the passed test 'SignUpTestViaChangingSignUpLinkNameOnTopMenuToUsernameLink'
-    @Test(testName = "MatchOfDisplayedUsernameLinkToTheRegisteredUsernameTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies that the displayed username link on top menu matches the registered username after successful 'Sign up'.")
-    public void verifyTheMatchOfDisplayedUsernameLinkToTheRegisteredUsernameWithSuccessfulSignUp() throws MalformedURLException {
-
-        new SignUpModalWindowPage().signUp();
-        String actualLinkName = new CustomerAccountPage().getLinkNameInPlaceOfSignUpLink();
-        String expectedLinkName = new SignUpModalWindowPage().getInputUsernameInSignUpForm();
-        String errorMessageIfTestFails = "The displayed username link on top menu doesn't match the registered username after successful 'Sign up'.";
-
-        assertEquals(errorMessageIfTestFails, expectedLinkName, actualLinkName);
+    public SignUpModalWindowPage inputGeneratedStrongPasswordInSignUpForm() {
+        WebElement passwordSignUpPlaceholder = driver.findElement(By.xpath(SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable(passwordSignUpPlaceholder)).click();
+        passwordSignUpPlaceholder.sendKeys(StringUtils.generateRandomStrongPasswordWithRandomLength());
+        logger.info("Entered generated password is " + passwordSignUpPlaceholder.getAttribute("value"));
+        return this;
     }
 
-    @Test(testName = "SignUpFailWithEmptyUsernameInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
-            description = "Verifies that 'Sign up' fails with empty username input field.")
-    public void verifyTheFailOfSignUpWithEmptyUsernameInput() throws MalformedURLException {
-
-        boolean userIsPushedBackToSignUpRegistrationFormWithEmptyUsernameInputField =
-                new SignUpModalWindowPage()
-                        .signUpWithEmptyUsernameInput()
-                        .signUpRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Sign up with empty username input field:" +
-                " a user might be either signed up, or not pushed back to 'sign up' registration form.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithEmptyUsernameInputField);
+    public SignUpModalWindowPage inputGeneratedWeakPasswordInSignUpForm() {
+        WebElement passwordSignUpPlaceholder = driver.findElement(By.xpath(SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.elementToBeClickable(passwordSignUpPlaceholder)).click();
+        passwordSignUpPlaceholder.sendKeys(generateRandomWeakPasswordWithRandomLength());
+        logger.info("Entered generated password is " + passwordSignUpPlaceholder.getAttribute("value"));
+        return this;
     }
 
-    @Test(testName = "SignUpFailWithEmptyPasswordInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
-            description = "Verifies that 'Sign up' fails with empty password input field.")
-    public void verifyTheFailOfSignUpWithEmptyPasswordInput() throws MalformedURLException {
-
-        boolean userIsPushedBackToSignUpRegistrationFormWithEmptyPasswordInput =
-                new SignUpModalWindowPage()
-                        .signUpWithEmptyPasswordInput()
-                        .signUpRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Sign up with empty password input field:" +
-                " a user might be either signed up, or not pushed back to 'Sign up' registration form.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithEmptyPasswordInput);
+    public String getInputUsernameInSignUpForm() {
+        return driver.findElement(By.xpath(SIGN_UP_USERNAME_PLACEHOLDER_ELEMENT_XPATH))
+                .getAttribute("value");
     }
 
-    // the test is reserved for the future strong password feature to be developed
-    @Test(testName = "SignUpFailWithWeakPasswordInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
-            description = "Verifies that the 'Sign up' with weak password input fails by displaying a " +
-                    "warning 'weak password' message under the input password field.")
-    public void verifyTheSignUpFailWithWeakPasswordInput() throws MalformedURLException {
-
-        boolean theWeakPasswordWarningMessageIsDisplayed = new SignUpModalWindowPage()
-                .inputGeneratedUsernameForInSignUpForm()
-                .inputGeneratedWeakPasswordInSignUpForm()
-                .theWeakPasswordWarningMessageIsDisplayed();
-        String errorMessageIfTestFails = "The weak password warning message is not displayed.";
-
-        assertTrue(errorMessageIfTestFails, theWeakPasswordWarningMessageIsDisplayed);
+    public String getInputPasswordInSignUpForm() {
+        return driver.findElement(By.xpath(SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))
+                .getAttribute("value");
     }
 
-    // the test is reserved for the future strong password feature to be developed.
-// run this test only after the test 'SignUpFailWithWeakPasswordInputTest'
-    @Test(testName = "WeakPasswordInputWarningMessageTest", suiteName = "SignUpPageTest", groups = {"negative"},
-            description = "Verifies the 'weak password' input warning message in 'Sign up' form.")
-    public void verifyTheWeakPasswordWarningMessageInSignUpForm() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
-
-        String actualWarningMessage = new SignUpModalWindowPage()
-                .inputGeneratedUsernameForInSignUpForm()
-                .inputGeneratedWeakPasswordInSignUpForm()
-                .getTheWeakPasswordInputWarningMessageInSignUpRegistrationForm();
-        String expectedWarningMessage = resourceBundle.getString("WeakPasswordWarningMessage");
-        String errorMessageIfTestFails = "The weak password warning message is not as expected";
-
-        assertEquals(errorMessageIfTestFails, expectedWarningMessage, actualWarningMessage);
+    public boolean theInputPasswordInSignUpFormIsStrong() {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("PasswordAndCreditCardSettings", Locale.US);
+        int minLengthOfStrongPassword = Integer.parseInt(resourceBundle.getString("upperBoundLengthOfWeakPassword"));
+        return ((driver.findElement(By.xpath(SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))
+                .getAttribute("value").length()) >= minLengthOfStrongPassword);
     }
 
-    @Test(testName = "SignUpFailWithRegisteredUsernameInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
-            description = "Verifies that 'Sign up' fails with the registered before username input.")
-    public void verifyTheFailOfSignUpWithRegisteredUsernameInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        boolean userIsPushedBackToSignUpRegistrationFormWithRegisteredBeforeUsername =
-                new SignUpModalWindowPage()
-                        .signUpWithRegisteredBeforeUsername(account)
-                        .signUpRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of 'Sign up' with the registered before username input:" +
-                " a user might be either signed up with the same username, or to be not pushed back to 'Sign up' registration form.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithRegisteredBeforeUsername);
+    public boolean theInputPasswordInSignUpFormIsWeak(int maxStrongPasswordLength) {
+        return (driver.findElement(By.xpath(SIGN_UP_PASSWORD_PLACEHOLDER_ELEMENT_XPATH))
+                .getAttribute("value").length() < maxStrongPasswordLength);
     }
 
-    @Test(testName = "AlertMessageResponseToSuccessfulSignUpTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies alert message response to the successful 'Sign up'.")
-    public void verifyTheAlertMessageResponseToSuccessfulSignUp() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
 
-        String actualAlertMessageResponseToSuccessfulSignUp =
-                new SignUpModalWindowPage()
-                        .inputGeneratedUsernameForInSignUpForm()
-                        .inputGeneratedStrongPasswordInSignUpForm()
-                        .pushSignUpButton()
-                        .getAlertMessageResponseToSignUpAction();
-        boolean actualAlertMessageResponseToSuccessfulSignUpIsAsExpected = actualAlertMessageResponseToSuccessfulSignUp
-                .equals(resourceBundle.getString("SignUpAlertMessageOnSignUpSuccessful"));
-        String errorMessageIfTestFails = "The displayed alert message response to successful 'Sign up' is not as expected.";
-
-        AssertJUnit.assertTrue(errorMessageIfTestFails, actualAlertMessageResponseToSuccessfulSignUpIsAsExpected);
+    public CustomerAccountPage signUp() throws MalformedURLException {
+        inputGeneratedUsernameForInSignUpForm();
+        inputGeneratedStrongPasswordInSignUpForm();
+        pushSignUpButton();
+        acceptAlertOnSignUp();
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.invisibilityOfElementLocated
+                        (By.xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You have signed up your account.");
+        return new CustomerAccountPage();
     }
 
-    //    The same alert message 'Please fill out Username and Password.' when sign up with empty username or password.
-//    Consider getting separate messages on empty username and empty password inputs, as well as for weak passwords.
-    @Test(testName = "AlertMessageResponseToSignUpFailWithEmptyUsernameInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies alert message response to the 'Sign up' failure with empty username input field.")
-    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithEmptyUsernameInput() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
-
-        String actualAlertMessageResponseToSignUpWithEmptyUsernameInput =
-                new SignUpModalWindowPage()
-                        .inputGeneratedStrongPasswordInSignUpForm()
-                        .pushSignUpButton()
-                        .getAlertMessageResponseToSignUpAction();
-        String expectedAlertMessageResponseToSignUpWithEmptyUsernameInput = resourceBundle
-                .getString("SignUpAlertMessageOnSignUpWithEmptyUsernameOrPasswordInput");
-        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with empty username input field is not as expected.";
-
-        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithEmptyUsernameInput,
-                expectedAlertMessageResponseToSignUpWithEmptyUsernameInput);
+    public SignUpModalWindowPage pushSignUpButton() {
+        WebElement buttonSignUp = driver.findElement(xpath(SIGN_UP_BUTTON_ELEMENT_XPATH));
+        buttonSignUp.click();
+        return this;
     }
 
-    //    The same alert message 'Please fill out Username and Password.' when sign up with empty username or password.
-//    Consider getting separate messages on empty username and empty password inputs, as well as for weak passwords.
-    @Test(testName = "AlertMessageResponseToSignUpFailWithEmptyPasswordInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies alert message response to the 'Sign up' failure with empty password input field.")
-    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithEmptyPasswordInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
-
-        String actualAlertMessageResponseToSignUpWithEmptyPasswordInput =
-                new SignUpModalWindowPage()
-                        .inputGeneratedUsernameForInSignUpForm()
-                        .pushSignUpButton()
-                        .getAlertMessageResponseToSignUpAction();
-        String expectedAlertMessageResponseToSignUpWithEmptyPasswordInput = resourceBundle
-                .getString("SignUpAlertMessageOnSignUpWithEmptyUsernameOrPasswordInput");
-        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with empty password input field is not as expected.";
-
-        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithEmptyPasswordInput,
-                expectedAlertMessageResponseToSignUpWithEmptyPasswordInput);
+    public SignUpModalWindowPage acceptAlertOnSignUp() {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.alertIsPresent()).accept();
+        logger.info("Alert window with the response message to 'Sign up' is accepted");
+        return this;
     }
 
-    @Test(testName = "AlertMessageResponseToSignUpFailWithRegisteredBeforeUsernameInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
-            description = "Verifies alert message response to the 'Sign up' failure with registered before username input field.")
-    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithRegisteredBeforeUsernameInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
-
-        String actualAlertMessageResponseToSignUpWithRegisteredUsernameInput =
-                new SignUpModalWindowPage()
-                        .inputUsernameInSignUpForm(account)
-                        .inputGeneratedStrongPasswordInSignUpForm()
-                        .pushSignUpButton()
-                        .getAlertMessageResponseToSignUpAction();
-        String expectedAlertMessageResponseToSignUpWithRegisteredBeforeUsernameInput = resourceBundle
-                .getString("SignUpAlertMessageOnSignUpWithRegisteredBeforeUsername");
-        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with registered before username input field is not as expected.";
-
-        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithRegisteredUsernameInput,
-                expectedAlertMessageResponseToSignUpWithRegisteredBeforeUsernameInput);
+    public SignUpModalWindowPage signUpWithEmptyUsernameInput() {
+        inputGeneratedStrongPasswordInSignUpForm();
+        pushSignUpButton();
+        acceptAlertOnSignUp();
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to 'Sign up' registration window.");
+        return this;
     }
 
-    // As the site is under development, checking 'Sign up' function is unavailable via HTTPS request.
-    // Look up alternative checking the 'Sign up' via the changing the top menu link 'sign up' to the signed up 'username'.
-    @Test(testName = "SignUpSuccessHTTPResponse",
-            suiteName = "SignUpModalWindowPageTest", groups = {"positive"},
-            description = "Verifies 'Sign up' in success HTTP response.")
-    public void verifyTheSignUpSuccessHTTPResponse() throws IOException {
-        String signedUpHTTPS = "https://www.demoblaze.com/#";
-        new SignUpModalWindowPage().signUp();
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpGet signedUpRequest = new HttpGet(signedUpHTTPS);
-        HttpResponse signedUpResponse = client.execute(signedUpRequest);
-
-        int actualSignedUpHTTPResponse = signedUpResponse.getStatusLine().getStatusCode();
-        String errorMessageIfTestFails = "The HTTP response is not correct to the successful 'sign up'.";
-
-        assertEquals(errorMessageIfTestFails, 200, actualSignedUpHTTPResponse);
+    public SignUpModalWindowPage signUpWithEmptyPasswordInput() {
+        inputGeneratedUsernameForInSignUpForm();
+        pushSignUpButton();
+        acceptAlertOnSignUp();
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to 'Sign up' registration window.");
+        return this;
     }
 
-    // As the site is under development, checking the fail of 'Sign up' function is unavailable via HTTPS request.
-    // Look up alternative checking the fail of 'sign up' - via not changing the top menu links and return to the 'Sign up' registration form.
-    @Test(testName = "SignUpFailHTTPResponseWithEmptyUsernameInput",
-            suiteName = "SignUpModalWindowPageTest", groups = {"negative"},
-            description = "Verifies failing 'Sign up' in with empty username input via HTTP response.")
-    public void verifyTheSignUpFailHTTPResponseWithEmptyUsernameInput() throws IOException {
-        String signedUpHTTPS = "https://www.demoblaze.com/#";
-        new SignUpModalWindowPage().signUpWithEmptyUsernameInput();
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpGet signedUpRequest = new HttpGet(signedUpHTTPS);
-        HttpResponse signedUpResponse = client.execute(signedUpRequest);
+    public SignUpModalWindowPage signUpWithRegisteredBeforeUsername(Customer account) {
+        inputUsernameInSignUpForm(account);
+        inputGeneratedStrongPasswordInSignUpForm();
+        pushSignUpButton();
+        acceptAlertOnSignUp();
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfAllElementsLocatedBy
+                        (xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)));
+        logger.info("You've pushed back to 'Sign up' registration window.");
+        return this;
+    }
 
-        int actualSignedUpHTTPResponse = signedUpResponse.getStatusLine().getStatusCode();
-        String errorMessageIfTestFails = "The HTTP response is not correct to the fail of 'Sign up'.";
+    public boolean signUpRegistrationWindowIsDisplayed() {
+        return driver.findElement(By.xpath(SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH)).isDisplayed();
+    }
 
-        assertEquals(errorMessageIfTestFails, 400, actualSignedUpHTTPResponse);
+    public String getAlertMessageResponseToSignUpAction() {
+        return new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.alertIsPresent()).getText();
+    }
+
+    // these methods for weak password message are reserved for the future strong password feature to be developed
+    public String getTheWeakPasswordInputWarningMessageInSignUpRegistrationForm() {
+        return driver.findElement(By.xpath(SIGN_UP_WEAK_PASSWORD_WARNING_MESSAGE_ELEMENT_XPATH)).getAttribute("textContent");
+    }
+
+    public boolean theWeakPasswordWarningMessageIsDisplayed() {
+        return driver.findElement(By.xpath(SIGN_UP_WEAK_PASSWORD_WARNING_MESSAGE_ELEMENT_XPATH)).isDisplayed();
     }
 }
