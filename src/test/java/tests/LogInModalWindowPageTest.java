@@ -5,20 +5,18 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WindowType;
-import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.edge.AddHasCasting;
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import pages.CustomerAccountPage;
-
 import pages.HomePage;
-import pages.LogInModalWindowPage;
+import pages.SignUpModalWindowPage;
 import storedataservice.CustomerAccountCompiler;
+import utils.StringUtils;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Locale;
@@ -26,241 +24,276 @@ import java.util.ResourceBundle;
 
 import static org.testng.AssertJUnit.*;
 
-// add API test methods verifying response code
-// add other methods from LogIn page
-public class LogInModalWindowPageTest extends RequiredConditions {
+// There should be additionally developed features on 'Sign up' and 'Log in' register forms such as:
+// - 'Sign up with email address or phone number';
+// - 'Account recovery options: email, phone number';
+// - 'Two-factor authentication (2FA);
+// - Documents references: 'Privacy policy', 'Services agreement', 'Terms of services';
+// The website is under development process: API test methods verifying response code don't work.
+
+public class SignUpModalWindowPageTest extends RequiredConditions {
     @Parameters("browser")
     @BeforeTest
-    public void openLogInModalWindow() throws MalformedURLException {
+    public void openSignUpModalWindow() throws MalformedURLException {
         new HomePage()
                 .openPage()
-                .openLogInModalWindowOnTopMenu();
+                .openSignUpModalWindowOnTopMenu();
     }
 
     @Parameters("browser")
-    @Test(testName = "LogInModalWindowPageTitleTest", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies the title of the 'Log in' modal window page")
-    public void verifyTheTitleOfLogInModalWindow() throws MalformedURLException {
+    @Test(testName = "SignUpModalWindowPageTitleTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies the title of the 'Sign up' modal window page")
+    public void verifyTheTitleOfSignUpModalWindow() throws MalformedURLException {
         ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
 
-        String actualLogInModalWindowTitle = new LogInModalWindowPage().getLogInModalWindowTitle();
-        String expectedLogInModalWindowTitle = resourceBundle.getString("LogInModalWindowTitle");
-        String errorMessageIfTestFails = "You've opened not the 'Log in' modal window page" +
-                "or the 'Log in' window page has another title";
+        String actualSignUpModalWindowTitle = new SignUpModalWindowPage().getSignUpModalWindowTitle();
+        String expectedSignUpModalWindowTitle = resourceBundle.getString("SignUpLinkTopNavigatingMenu");
+        String errorMessageIfTestFails = "You've opened not the 'Sign up' modal window page" +
+                "or the 'Sign up' window page has another title";
 
-        assertEquals(errorMessageIfTestFails, expectedLogInModalWindowTitle, actualLogInModalWindowTitle);
+        assertEquals(errorMessageIfTestFails, expectedSignUpModalWindowTitle, actualSignUpModalWindowTitle);
     }
 
-    @Test(testName = "InputUsernameInLogInModalWindowTest", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies that a customer can input username in 'Log in' form in Log in modal window")
-    public void verifyThatCustomerCanInputUsernameInLogInFormInLogInWindowPage() throws MalformedURLException {
+    @Test(testName = "InputUsernameInSignUpModalWindowTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies that a customer can input username in 'Sign up' form in Sign up modal window")
+    public void verifyThatCustomerCanInputUsernameInSignUpRegisterForm() throws MalformedURLException {
         Customer account = CustomerAccountCompiler.withCredentialFromProperty();
 
-        String actualInputUsername = new LogInModalWindowPage().inputUsername(account).getInputUsername();
-        String expectedInputUsername = account.getFirstName().concat(" ").concat(account.getSurname());
-        String errorMessageIfTestFails = "The displayed username is not that was input";
+        String actualInputUsernameInSignUpForm = new SignUpModalWindowPage()
+                .inputGeneratedUsernameForInSignUpForm()
+                .getInputUsernameInSignUpForm();
+        String expectedInputUsernameInSignUpForm = account.getFirstName()
+                .concat(" ").concat(account.getSurname());
+        String errorMessageIfTestFails = "The displayed username in 'Sign up' register form is not that was actually input";
 
-        assertEquals(errorMessageIfTestFails, expectedInputUsername, actualInputUsername);
+        assertEquals(errorMessageIfTestFails, expectedInputUsernameInSignUpForm, actualInputUsernameInSignUpForm);
     }
 
-    @Test(testName = "InputPasswordInLogInModalWindowTest", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies that a customer can input password in 'Log in' form in Log in modal window")
-    public void verifyThatCustomerCanInputPasswordInLogInFormInLogInWindowPage() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
+    @Test(testName = "StrongPasswordInputInSignUpModalWindowTest", suiteName = "InSignUpPageTest", groups = {"positive"},
+            description = "Verifies that the input password in 'Sign up' form is strong enough .")
+    public void verifyThatTheInputPasswordInSignUpFormIsStrong() throws MalformedURLException {
 
-        String actualInputPassword = new LogInModalWindowPage().inputPassword(account).getInputPassword();
-        String expectedInputPassword = account.getPassword();
-        String errorMessageIfTestFails = "The displayed password is not that was input";
+        new SignUpModalWindowPage()
+                .inputGeneratedStrongPasswordInSignUpForm();
 
-        assertEquals(errorMessageIfTestFails, expectedInputPassword, actualInputPassword);
+        boolean theInputPasswordInSignUpFormIsStrong = new SignUpModalWindowPage().theInputPasswordInSignUpFormIsStrong();
+        String errorMessageIfTestFails = "The input password in 'Sign up' form is not enough strong.";
+
+        assertTrue(errorMessageIfTestFails, theInputPasswordInSignUpFormIsStrong);
     }
 
-    @Test(testName = "LogInTestViaChangingSignUpLinkNameOnTopMenuToUsernameLink", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies that 'Sign up' link changes to 'Username' link after successful Log in action.")
-    public void verifyThatSignUpLinkChangesToUsernameLinkAfterSuccessfulLogInAction() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+    @Test(testName = "SignUpTestViaChangingSignUpLinkNameOnTopMenuToUsernameLink", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies that 'Sign up' link changes to 'Username' link after successful Sign up action.")
+    public void verifyTheSignUpSuccessViaDisplayingUsernameLink() throws MalformedURLException {
 
-        new LogInModalWindowPage().logIn(account);
+        new SignUpModalWindowPage().signUp();
+        boolean usernameRegisteredOnTopMenuIsNotDisplayed =
+                new CustomerAccountPage().usernameLinkInPlaceOfSignUpLinkIsNotDisplayed();
+        String errorMessageIfTestFails = "'Sign up' failed or the registered username is not displayed on top menu .";
+
+        AssertJUnit.assertFalse(errorMessageIfTestFails, usernameRegisteredOnTopMenuIsNotDisplayed);
+    }
+
+    // run this test only after the passed test 'SignUpTestViaChangingSignUpLinkNameOnTopMenuToUsernameLink'
+    @Test(testName = "MatchOfDisplayedUsernameLinkToTheRegisteredUsernameTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies that the displayed username link on top menu matches the registered username after successful 'Sign up'.")
+    public void verifyTheMatchOfDisplayedUsernameLinkToTheRegisteredUsernameWithSuccessfulSignUp() throws MalformedURLException {
+
+        new SignUpModalWindowPage().signUp();
         String actualLinkName = new CustomerAccountPage().getLinkNameInPlaceOfSignUpLink();
-        String expectedLinkName = resourceBundle
-                .getString("LinkNameInPlaceOfSignUpAfterSuccessfulRegistration").concat(" ")
-                .concat(account.getFirstName().concat(" ").concat(account.getSurname()));
-        String errorMessageIfTestFails = "The displayed link name 'Sign up' does not change to the one containing registered username.";
+        String expectedLinkName = new SignUpModalWindowPage().getInputUsernameInSignUpForm();
+        String errorMessageIfTestFails = "The displayed username link on top menu doesn't match the registered username after successful 'Sign up'.";
 
         assertEquals(errorMessageIfTestFails, expectedLinkName, actualLinkName);
     }
 
-    //    Switching to a new tab of the window using: driver.switchTo().newWindow(WindowType.TAB) doesn't work.
-    @Test(testName = "ReLogInToTheSameAccountFailureWithoutLogOutTest", suiteName = "LogInPageTest", groups = {"negative", "security"},
-            description = "Verifies that the user can't re-'Log in' the same account without the prior 'Log out'.")
-    public void verifyThatVerifiesThatUserCantReLogInTheSameAccountWithoutThePriorLogOut() throws MalformedURLException, AWTException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
+    @Test(testName = "SignUpFailWithEmptyUsernameInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
+            description = "Verifies that 'Sign up' fails with empty username input field.")
+    public void verifyTheFailOfSignUpWithEmptyUsernameInput() throws MalformedURLException {
 
-        new LogInModalWindowPage().logIn(account);
-        new HomePage()
-                .openPage()
-                .openLogInModalWindowOnTopMenu();
-        new LogInModalWindowPage().logIn(account);
+        boolean userIsPushedBackToSignUpRegistrationFormWithEmptyUsernameInputField =
+                new SignUpModalWindowPage()
+                        .signUpWithEmptyUsernameInput()
+                        .signUpRegistrationWindowIsDisplayed();
+        String errorMessageIfTestFails = "Unexpected result in case of Sign up with empty username input field:" +
+                " a user might be either signed up, or not pushed back to 'sign up' registration form.";
 
-        boolean usernameAccountIsDisplayed = new CustomerAccountPage().usernameLinkInPlaceOfSignUpLinkIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result: User can re-'Log in' the same account without the prior 'Log out'.";
-
-        assertFalse(errorMessageIfTestFails, usernameAccountIsDisplayed);
+        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithEmptyUsernameInputField);
     }
 
-    @Test(testName = "LogInTestViaChangingLogInLinkNameOnTopMenuToLogOut", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies that 'Log in' link changes to 'Log out' link after successful Log in action.")
-    public void verifyThatLogInLinkChangesToLogOutLinkAfterSuccessfulLogInAction() throws MalformedURLException {
+    @Test(testName = "SignUpFailWithEmptyPasswordInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
+            description = "Verifies that 'Sign up' fails with empty password input field.")
+    public void verifyTheFailOfSignUpWithEmptyPasswordInput() throws MalformedURLException {
+
+        boolean userIsPushedBackToSignUpRegistrationFormWithEmptyPasswordInput =
+                new SignUpModalWindowPage()
+                        .signUpWithEmptyPasswordInput()
+                        .signUpRegistrationWindowIsDisplayed();
+        String errorMessageIfTestFails = "Unexpected result in case of Sign up with empty password input field:" +
+                " a user might be either signed up, or not pushed back to 'Sign up' registration form.";
+
+        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithEmptyPasswordInput);
+    }
+
+    // the test is reserved for the future strong password feature to be developed
+    @Test(testName = "SignUpFailWithWeakPasswordInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
+            description = "Verifies that the 'Sign up' with weak password input fails by displaying a " +
+                    "warning 'weak password' message under the input password field.")
+    public void verifyTheSignUpFailWithWeakPasswordInput() throws MalformedURLException {
+
+        boolean theWeakPasswordWarningMessageIsDisplayed = new SignUpModalWindowPage()
+                .inputGeneratedUsernameForInSignUpForm()
+                .inputGeneratedWeakPasswordInSignUpForm()
+                .theWeakPasswordWarningMessageIsDisplayed();
+        String errorMessageIfTestFails = "The weak password warning message is not displayed.";
+
+        assertTrue(errorMessageIfTestFails, theWeakPasswordWarningMessageIsDisplayed);
+    }
+
+    // the test is reserved for the future strong password feature to be developed.
+// run this test only after the test 'SignUpFailWithWeakPasswordInputTest'
+    @Test(testName = "WeakPasswordInputWarningMessageTest", suiteName = "SignUpPageTest", groups = {"negative"},
+            description = "Verifies the 'weak password' input warning message in 'Sign up' form.")
+    public void verifyTheWeakPasswordWarningMessageInSignUpForm() throws MalformedURLException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+
+        String actualWarningMessage = new SignUpModalWindowPage()
+                .inputGeneratedUsernameForInSignUpForm()
+                .inputGeneratedWeakPasswordInSignUpForm()
+                .getTheWeakPasswordInputWarningMessageInSignUpRegistrationForm();
+        String expectedWarningMessage = resourceBundle.getString("WeakPasswordWarningMessage");
+        String errorMessageIfTestFails = "The weak password warning message is not as expected";
+
+        assertEquals(errorMessageIfTestFails, expectedWarningMessage, actualWarningMessage);
+    }
+
+    @Test(testName = "SignUpFailWithRegisteredUsernameInputTest", suiteName = "SignUpPageTest", groups = {"negative"},
+            description = "Verifies that 'Sign up' fails with the registered before username input.")
+    public void verifyTheFailOfSignUpWithRegisteredUsernameInput() throws MalformedURLException {
+        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
+
+        boolean userIsPushedBackToSignUpRegistrationFormWithRegisteredBeforeUsername =
+                new SignUpModalWindowPage()
+                        .signUpWithRegisteredBeforeUsername(account)
+                        .signUpRegistrationWindowIsDisplayed();
+        String errorMessageIfTestFails = "Unexpected result in case of 'Sign up' with the registered before username input:" +
+                " a user might be either signed up with the same username, or to be not pushed back to 'Sign up' registration form.";
+
+        assertTrue(errorMessageIfTestFails, userIsPushedBackToSignUpRegistrationFormWithRegisteredBeforeUsername);
+    }
+
+    @Test(testName = "AlertMessageResponseToSuccessfulSignUpTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies alert message response to the successful 'Sign up'.")
+    public void verifyTheAlertMessageResponseToSuccessfulSignUp() throws MalformedURLException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+
+        String actualAlertMessageResponseToSuccessfulSignUp =
+                new SignUpModalWindowPage()
+                        .inputGeneratedUsernameForInSignUpForm()
+                        .inputGeneratedStrongPasswordInSignUpForm()
+                        .pushSignUpButton()
+                        .getAlertMessageResponseToSignUpAction();
+        boolean actualAlertMessageResponseToSuccessfulSignUpIsAsExpected = actualAlertMessageResponseToSuccessfulSignUp
+                .equals(resourceBundle.getString("SignUpAlertMessageOnSignUpSuccessful"));
+        String errorMessageIfTestFails = "The displayed alert message response to successful 'Sign up' is not as expected.";
+
+        AssertJUnit.assertTrue(errorMessageIfTestFails, actualAlertMessageResponseToSuccessfulSignUpIsAsExpected);
+    }
+
+    //    The same alert message 'Please fill out Username and Password.' when sign up with empty username or password.
+//    Consider getting separate messages on empty username and empty password inputs, as well as for weak passwords.
+    @Test(testName = "AlertMessageResponseToSignUpFailWithEmptyUsernameInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies alert message response to the 'Sign up' failure with empty username input field.")
+    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithEmptyUsernameInput() throws MalformedURLException {
+        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+
+        String actualAlertMessageResponseToSignUpWithEmptyUsernameInput =
+                new SignUpModalWindowPage()
+                        .inputGeneratedStrongPasswordInSignUpForm()
+                        .pushSignUpButton()
+                        .getAlertMessageResponseToSignUpAction();
+        String expectedAlertMessageResponseToSignUpWithEmptyUsernameInput = resourceBundle
+                .getString("SignUpAlertMessageOnSignUpWithEmptyUsernameOrPasswordInput");
+        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with empty username input field is not as expected.";
+
+        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithEmptyUsernameInput,
+                expectedAlertMessageResponseToSignUpWithEmptyUsernameInput);
+    }
+
+    //    The same alert message 'Please fill out Username and Password.' when sign up with empty username or password.
+//    Consider getting separate messages on empty username and empty password inputs, as well as for weak passwords.
+    @Test(testName = "AlertMessageResponseToSignUpFailWithEmptyPasswordInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies alert message response to the 'Sign up' failure with empty password input field.")
+    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithEmptyPasswordInput() throws MalformedURLException {
         Customer account = CustomerAccountCompiler.withCredentialFromProperty();
         ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
 
-        new LogInModalWindowPage().logIn(account);
-        String actualLinkName = new CustomerAccountPage().getLinkNameInPlaceOfLogInLink();
-        String expectedLinkName = resourceBundle
-                .getString("LinkNameInPlaceOfLogInAfterSuccessfulRegistration");
-        String errorMessageIfTestFails = "The displayed link name Log In does not change to Log out.";
+        String actualAlertMessageResponseToSignUpWithEmptyPasswordInput =
+                new SignUpModalWindowPage()
+                        .inputGeneratedUsernameForInSignUpForm()
+                        .pushSignUpButton()
+                        .getAlertMessageResponseToSignUpAction();
+        String expectedAlertMessageResponseToSignUpWithEmptyPasswordInput = resourceBundle
+                .getString("SignUpAlertMessageOnSignUpWithEmptyUsernameOrPasswordInput");
+        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with empty password input field is not as expected.";
 
-        assertEquals(errorMessageIfTestFails, actualLinkName, expectedLinkName);
+        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithEmptyPasswordInput,
+                expectedAlertMessageResponseToSignUpWithEmptyPasswordInput);
     }
 
-    @Test(testName = "LogInFailWithEmptyUsernameInputTest", suiteName = "LogInPageTest", groups = {"negative"},
-            description = "Verifies that 'Log in' fails with empty username input field.")
-    public void verifyTheFailOfLogInWithEmptyUsernameInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        boolean userIsPushedBackToLogInRegistrationWindowWithLogInErrors = new LogInModalWindowPage()
-                .logInWithEmptyUsername(account)
-                .pushLogInButton()
-                .acceptAlertOnLogIn()
-                .logInRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Log in with empty username input field:" +
-                " a user might be either logged in, or to be not pushed back to 'Log in' registration window.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToLogInRegistrationWindowWithLogInErrors);
-    }
-
-    @Test(testName = "LogInFailWithEmptyPasswordInputTest", suiteName = "LogInPageTest", groups = {"negative"},
-            description = "Verifies that 'Log in' fails with empty password input field.")
-    public void verifyTheFailOfLogInWithEmptyPasswordInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        boolean userIsPushedBackToLogInRegistrationWindowWithLogInErrors = new LogInModalWindowPage()
-                .logInWithEmptyPassword(account)
-                .pushLogInButton()
-                .acceptAlertOnLogIn()
-                .logInRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Log in with empty password input field:" +
-                " a user might be either logged in, or to be not pushed back to 'Log in' registration window.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToLogInRegistrationWindowWithLogInErrors);
-    }
-
-    @Test(testName = "LogInFailWithWrongPasswordInputTest", suiteName = "LogInPageTest", groups = {"negative"},
-            description = "Verifies that 'Log in' fails with wrong password input.")
-    public void verifyTheFailOfLogInWithWrongPasswordInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        boolean userIsPushedBackToLogInRegistrationWindowWithLogInErrors = new LogInModalWindowPage()
-                .logInWithWrongPassword(account)
-                .pushLogInButton()
-                .acceptAlertOnLogIn()
-                .logInRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Log in with wrong password input:" +
-                " a user might be either logged in, or to be not pushed back to 'Log in' registration window.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToLogInRegistrationWindowWithLogInErrors);
-    }
-
-    @Test(testName = "LogInFailWithNonRegisteredUsernameInputTest", suiteName = "LogInPageTest", groups = {"negative"},
-            description = "Verifies that 'Log in' fails with non-registered username input.")
-    public void verifyTheFailOfLogInWithNonRegisteredUsernameInput() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-
-        boolean userIsPushedBackToLogInRegistrationWindowWithLogInErrors = new LogInModalWindowPage()
-                .logInWithNonRegisteredUsername(account)
-                .pushLogInButton()
-                .acceptAlertOnLogIn()
-                .logInRegistrationWindowIsDisplayed();
-        String errorMessageIfTestFails = "Unexpected result in case of Log in with non-registered username input:" +
-                " a user might be either logged in, or to be not pushed back to 'Log in' registration window.";
-
-        assertTrue(errorMessageIfTestFails, userIsPushedBackToLogInRegistrationWindowWithLogInErrors);
-    }
-
-    @Test(testName = "AlertMessageResponseToLogInFailWithEmptyUsernameInputTest", suiteName = "LogInPageTest", groups = {"positive"},
-            description = "Verifies alert message response to the 'Log in' failure with empty username input field.")
-    public void verifyTheAlertMessageResponseToTheFailOfLogInWithEmptyUsernameInput() throws MalformedURLException {
+    @Test(testName = "AlertMessageResponseToSignUpFailWithRegisteredBeforeUsernameInputTest", suiteName = "SignUpPageTest", groups = {"positive"},
+            description = "Verifies alert message response to the 'Sign up' failure with registered before username input field.")
+    public void verifyTheAlertMessageResponseToTheFailOfSignUpWithRegisteredBeforeUsernameInput() throws MalformedURLException {
         Customer account = CustomerAccountCompiler.withCredentialFromProperty();
         ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
 
-        String actualAlertMessageResponseToLogInWithErrorInput = new LogInModalWindowPage()
-                .logInWithEmptyUsername(account)
-                .pushLogInButton()
-                .getAlertMessageResponseToLogInAction();
-        String expectedAlertMessageResponseToLogInWithErrorInput = resourceBundle
-                .getString("LogInAlertMessageOnLogInWithNonExistingUsername");
-        String errorMessageIfTestFails = "The displayed alert message response to Log in with empty username input field is not as expected.";
+        String actualAlertMessageResponseToSignUpWithRegisteredUsernameInput =
+                new SignUpModalWindowPage()
+                        .inputUsernameInSignUpForm(account)
+                        .inputGeneratedStrongPasswordInSignUpForm()
+                        .pushSignUpButton()
+                        .getAlertMessageResponseToSignUpAction();
+        String expectedAlertMessageResponseToSignUpWithRegisteredBeforeUsernameInput = resourceBundle
+                .getString("SignUpAlertMessageOnSignUpWithRegisteredBeforeUsername");
+        String errorMessageIfTestFails = "The displayed alert message response to 'Sign up' with registered before username input field is not as expected.";
 
-        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToLogInWithErrorInput,
-                expectedAlertMessageResponseToLogInWithErrorInput);
+        assertEquals(errorMessageIfTestFails, actualAlertMessageResponseToSignUpWithRegisteredUsernameInput,
+                expectedAlertMessageResponseToSignUpWithRegisteredBeforeUsernameInput);
     }
 
-    // As the site is under development, checking log in function is unavailable via HTTPS request.
-    // Look up alternative checking the log in via changing the top menu link 'sign up' to the logged in 'username'.
-    @Test(testName = "LogInSuccessHTTPResponse",
-            suiteName = "LogInModalWindowPageTest", groups = {"positive"},
-            description = "Verifies Log in success HTTP response.")
-    public void verifyLogInSuccessHTTPResponse() throws IOException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        String loggedInHTTPS = "https://www.demoblaze.com/#";
-        new LogInModalWindowPage().logIn(account);
+    // As the site is under development, checking 'Sign up' function is unavailable via HTTPS request.
+    // Look up alternative checking the 'Sign up' via the changing the top menu link 'sign up' to the signed up 'username'.
+    @Test(testName = "SignUpSuccessHTTPResponse",
+            suiteName = "SignUpModalWindowPageTest", groups = {"positive"},
+            description = "Verifies 'Sign up' in success HTTP response.")
+    public void verifyTheSignUpSuccessHTTPResponse() throws IOException {
+        String signedUpHTTPS = "https://www.demoblaze.com/#";
+        new SignUpModalWindowPage().signUp();
         HttpClient client = HttpClientBuilder.create().build();
-        HttpGet loggedInRequest = new HttpGet(loggedInHTTPS);
-        HttpResponse loggedInResponse = client.execute(loggedInRequest);
+        HttpGet signedUpRequest = new HttpGet(signedUpHTTPS);
+        HttpResponse signedUpResponse = client.execute(signedUpRequest);
 
-        int actualLoggedInHTTPResponse = loggedInResponse.getStatusLine().getStatusCode();
-        String errorMessageIfTestFails = "The HTTP response is not correct to the successful 'Log in'.";
+        int actualSignedUpHTTPResponse = signedUpResponse.getStatusLine().getStatusCode();
+        String errorMessageIfTestFails = "The HTTP response is not correct to the successful 'sign up'.";
 
-        assertEquals(errorMessageIfTestFails, 200, actualLoggedInHTTPResponse);
+        assertEquals(errorMessageIfTestFails, 200, actualSignedUpHTTPResponse);
     }
 
-    // As the site is under development, checking 'Log out' function is unavailable via HTTPS request.
-    // Look up an alternative checking the 'Log out' - via changing the top menu links 'username' to 'sign up' and 'log out' link to 'log in'.
-    @Test(testName = "LogOutSuccessHTTPResponse",
-            suiteName = "LogInModalWindowPageTest", groups = {"positive"},
-            description = "Verifies Log out success HTTP response.")
-    public void verifyLogOutSuccessHTTPResponse() throws IOException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        String loggedOutHTTPS = "https://www.demoblaze.com/index.html";
-        new LogInModalWindowPage().logIn(account);
-        new CustomerAccountPage().logOut();
+    // As the site is under development, checking the fail of 'Sign up' function is unavailable via HTTPS request.
+    // Look up alternative checking the fail of 'sign up' - via not changing the top menu links and return to the 'Sign up' registration form.
+    @Test(testName = "SignUpFailHTTPResponseWithEmptyUsernameInput",
+            suiteName = "SignUpModalWindowPageTest", groups = {"negative"},
+            description = "Verifies failing 'Sign up' in with empty username input via HTTP response.")
+    public void verifyTheSignUpFailHTTPResponseWithEmptyUsernameInput() throws IOException {
+        String signedUpHTTPS = "https://www.demoblaze.com/#";
+        new SignUpModalWindowPage().signUpWithEmptyUsernameInput();
         HttpClient client = HttpClientBuilder.create().build();
-        HttpGet loggedOutRequest = new HttpGet(loggedOutHTTPS);
-        HttpResponse loggedOutResponse = client.execute(loggedOutRequest);
+        HttpGet signedUpRequest = new HttpGet(signedUpHTTPS);
+        HttpResponse signedUpResponse = client.execute(signedUpRequest);
 
-        int actualLoggedOutHTTPResponse = loggedOutResponse.getStatusLine().getStatusCode();
-        String errorMessageIfTestFails = "The HTTP response is not correct to the successful 'Log out'.";
+        int actualSignedUpHTTPResponse = signedUpResponse.getStatusLine().getStatusCode();
+        String errorMessageIfTestFails = "The HTTP response is not correct to the fail of 'Sign up'.";
 
-        assertEquals(errorMessageIfTestFails, 200, actualLoggedOutHTTPResponse);
-    }
-
-    // As the site is under development, checking the fail of 'Log in' function is unavailable via HTTPS request.
-    // Look up alternative checking the fail of 'Log in' - via not changing the top menu links and return to the 'log in' registration popped up window.
-    @Test(testName = "LogInFailHTTPResponseWithEmptyUsernameInput",
-            suiteName = "LogInModalWindowPageTest", groups = {"negative"},
-            description = "Verifies failing Log in with empty username input via HTTP response.")
-    public void verifyLogInFailHTTPResponseWithEmptyUsernameInput() throws IOException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
-        String loggedInHTTPS = "https://www.demoblaze.com/#";
-        new LogInModalWindowPage().logInWithEmptyUsername(account);
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpGet loggedInRequest = new HttpGet(loggedInHTTPS);
-        HttpResponse loggedInResponse = client.execute(loggedInRequest);
-
-        int actualLoggedInHTTPResponse = loggedInResponse.getStatusLine().getStatusCode();
-        String errorMessageIfTestFails = "The HTTP response is not correct to the fail of 'Log in'.";
-
-        assertEquals(errorMessageIfTestFails, 400, actualLoggedInHTTPResponse);
+        assertEquals(errorMessageIfTestFails, 400, actualSignedUpHTTPResponse);
     }
 }
