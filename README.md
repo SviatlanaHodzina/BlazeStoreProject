@@ -1,22 +1,24 @@
 # BlazeStoreProject
 
-The website project is under the development. 
+The website project is under the development.
+
+Testing is in the process.
 
 Given the site https://www.demoblaze.com/index.html
 
    It is required:
    
-   1. Write user story,
+   1. User story,
    
-   2. Write checklist,
+   2. Checklist,
    
-   3. Write test-cases,
+   3. Test-cases,
    
-   4. Write bug-report,
+   4. Bug-report,
    
    5. Add the results to Google sheets.
    
-1) User story uploaded here: 
+1) User story uploaded here as 
 BlazeStore-Agile_User_Story.xlsx
 
 2) Check List, Agile_User_Story, Bug Report link :
