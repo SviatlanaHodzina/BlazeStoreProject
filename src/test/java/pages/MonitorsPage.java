@@ -24,6 +24,8 @@ public class MonitorsPage extends AbstractPage {
 
     public final Logger logger = LogManager.getRootLogger();
 
+    public final static String MONITOR_ITEM_MODEL_LIST_ELEMENT_XPATH = "//div[@class='card-block']//a[contains(text(),'%s')]";
+
     @FindBy(how = How.XPATH, using = PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH)
     private List<WebElement> monitorItemsList;
 
@@ -60,18 +62,6 @@ public class MonitorsPage extends AbstractPage {
         return monitorModelsList.stream().sorted()
                 .flatMap(monitorModel -> monitorModel.getAttribute("textContent").lines())
                 .collect(Collectors.toList());
-    }
-
-    public List<String> getMonitorModelsListInResourceBundle() {
-        ResourceBundle resourceBundleMonitors = ResourceBundle.getBundle("monitors");
-        Enumeration<String> monitorKeys = resourceBundleMonitors.getKeys();
-        List<String> monitorKeysList = new ArrayList<>();
-        while (monitorKeys.hasMoreElements()) {
-            String monitorKey = monitorKeys.nextElement();
-            String monitorValue = resourceBundleMonitors.getString(monitorKey);
-            monitorKeysList.add(monitorKey);
-        }
-        return monitorKeysList;
     }
 
     public List<String> getMonitorPriceList() {
