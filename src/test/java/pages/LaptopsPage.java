@@ -22,11 +22,26 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.openqa.selenium.By.xpath;
 import static pages.HomePage.*;
 
 public class LaptopsPage extends AbstractPage {
     public final Logger logger = LogManager.getRootLogger();
+
+    public final static String LAPTOP_ITEM_MODEL_LIST_ELEMENT_XPATH = "//div[@class='card-block']//a[contains(text(),'%s')]";
+
+    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH)
+    private List<WebElement> laptopItemsList;
+
+    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_PRICE_ELEMENT_XPATH)
+    private static List<WebElement> laptopsPriceList;
+
+    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_MODEL_ELEMENT_XPATH)
+    private static List<WebElement> laptopHrefModelsList;
+
+    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_DESCRIPTION_ELEMENT_XPATH)
+    private static List<WebElement> laptopDescriptionList;
 
     public LaptopsPage() throws MalformedURLException {
         super();
@@ -42,18 +57,6 @@ public class LaptopsPage extends AbstractPage {
         return this;
     }
 
-    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH)
-    private List<WebElement> laptopItemsList;
-
-    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_PRICE_ELEMENT_XPATH)
-    private static List<WebElement> laptopsPriceList;
-
-    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_MODEL_ELEMENT_XPATH)
-    private static List<WebElement> laptopHrefModelsList;
-
-    @FindBy(how = How.XPATH, using = PRODUCT_ITEM_DESCRIPTION_ELEMENT_XPATH)
-    private static List<WebElement> laptopDescriptionList;
-
     public List<String> getLaptopModelsList() {
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.attributeContains(xpath(PRODUCT_CONTAINER_ELEMENT_XPATH),
@@ -61,18 +64,6 @@ public class LaptopsPage extends AbstractPage {
         return laptopHrefModelsList.stream().sorted()
                 .flatMap(phoneModel -> phoneModel.getAttribute("textContent").lines())
                 .collect(Collectors.toList());
-    }
-
-    public static List<String> getLaptopModelsListInResourceBundle() {
-        ResourceBundle resourceBundleLaptops = ResourceBundle.getBundle("laptops");
-        Enumeration<String> laptopKeys = resourceBundleLaptops.getKeys();
-        List<String> laptopKeysList = new ArrayList<>();
-        while (laptopKeys.hasMoreElements()) {
-            String laptopKey = laptopKeys.nextElement();
-            String laptopValue = resourceBundleLaptops.getString(laptopKey);
-            laptopKeysList.add(laptopValue);
-        }
-        return laptopKeysList;
     }
 
     public List<String> getLaptopPriceList() {
