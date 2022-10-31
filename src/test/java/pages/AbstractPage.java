@@ -7,8 +7,10 @@ import webdriver.WebDriverConnector;
 import java.net.MalformedURLException;
 
 public abstract class AbstractPage {
+
     protected WebDriver driver;
-    public final int WAIT_TIMEOUT_SECONDS = 50;
+    public final int WAIT_TIMEOUT_SECONDS = 50;    
+    public final int WAIT_TIMEOUT_SECONDS_LASTED = 500;
 
     protected abstract AbstractPage openPage();
 
