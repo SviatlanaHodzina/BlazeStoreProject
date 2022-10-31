@@ -5,39 +5,52 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 import pages.HomePage;
-import pages.LaptopsPage;
-import pages.MonitorsPage;
 import pages.PhonesPage;
 
 import java.net.MalformedURLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.testng.AssertJUnit.*;
-import static pages.PhonesPage.getPhoneModelsListInResourceBundle;
+import static pages.HomePage.*;
 
-//the products' descriptions should be implemented as technical specifications
+//the products' descriptions should be implemented as technical specifications with appropriate content
+//currency sign ($,€,£,¥ etc should be placed in DOM separately from their value)
 public class PhonesPageTest extends RequiredConditions {
     @Parameters("browser")
     @BeforeTest
-    public void openAboutUsModalWindowLinkOnTopNavigatingMenu() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+    public void openPhonesPage() throws MalformedURLException {
+        ResourceBundle resourceBundleVisibleContent = ResourceBundle.getBundle("VisibleContent", Locale.US);
         new HomePage()
                 .openPage()
-                .openPhonesLinkOnSideMenu(resourceBundle.getString("PhonesLinkOnSideMenu"));
+                .openPhonesLinkOnSideMenu(resourceBundleVisibleContent.getString("PhonesLinkOnSideMenu"),
+                        getLaptopModelsListInResourceBundle(), getMonitorModelsListInResourceBundle());
     }
 
     @Parameters("browser")
-    @Test(testName = "PhonesRowContainsAllPhoneModelsInResourceBundleTest", suiteName = "PhonesPageTest",
+    @Test(testName = "PhonesSortingTest", suiteName = "PhonesPageTest",
             groups = {"positive"}, description = "Verifies That 'Phones' link side menu navigates to phones row")
-    public void verifyThatPhonesLinkOnSideMenuNavigatesToPhonesRowOnly() throws MalformedURLException {
-        List<String> actualPhoneHrefModelsList = new PhonesPage()
-                .getPhoneHrefModelsList();
-        List<String> expectedPhoneModelsList = new PhonesPage()
-                .getPhoneModelsListInResourceBundle();
+    public void verifyThatPhonesLinkSortsTheProductsByTheCategoryPhones() throws MalformedURLException {
+        List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList()
+                .stream().sorted().collect(Collectors.toList());
+        List<String> expectedPhoneModelsList = new HomePage().getPhoneModelsListInResourceBundle()
+                .stream().sorted().collect(Collectors.toList());
 
-        String errorMessageIfTestFails = "The 'Phones' section does not contain all the phone models in resource bundle.";
+        String errorMessageIfTestFails = "The 'Phones' link does not sort the products by the category 'Phones', but contains other product's category.";
 
-        assertTrue(errorMessageIfTestFails, actualPhoneHrefModelsList.containsAll(expectedPhoneModelsList));
+        assertEquals(errorMessageIfTestFails, expectedPhoneModelsList, actualPhoneHrefModelsList);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "PhonesPriceMapTest", suiteName = "PhonesPageTest",
+            groups = {"positive"}, description = "Verifies that the 'Phones price list' is conformed with the one displayed " +
+            "in Resource Bundle (analogue of data base)")
+    public void verifyThatPhonesPriceListIsConformedWithResourceBundle() throws MalformedURLException {
+        Map<String, Integer> actualPhonesPriceList = new PhonesPage().getPhoneModelsPriceMap();
+        Map<String, Integer> expectedPhonesPriceList = new HomePage().getPhoneModelsPriceMapInResourceBundle();
+        String errorMessageIfTestFails = "The 'Phones price list' is not conformed with the one displayed in Resource Bundle.";
+
+        assertEquals(errorMessageIfTestFails, expectedPhonesPriceList, actualPhonesPriceList);
     }
 
     @Parameters("browser")
@@ -45,7 +58,7 @@ public class PhonesPageTest extends RequiredConditions {
             groups = {"Positive"}, description = "Verifies that 'Phones' row size equals size of phones in resource Bundle.")
     public void verifyThatPhonesRowEqualsTheSizeOfPhoneRowInResourceBundle() throws MalformedURLException {
         int actualPhoneRowSize = new PhonesPage().getSizeOfPhonesList();
-        int expectedPhoneRowSize = new PhonesPage().getPhoneModelsListInResourceBundle().size();
+        int expectedPhoneRowSize = new HomePage().getPhoneModelsListInResourceBundle().size();
         String errorMessageIfTestFails = "The 'Phones' row is not equal to the size of phone models in Resource bundle.";
 
         assertEquals(errorMessageIfTestFails, expectedPhoneRowSize, actualPhoneRowSize);
@@ -55,14 +68,9 @@ public class PhonesPageTest extends RequiredConditions {
     @Test(testName = "PhonesRowContainerDoesNotContainLaptopItemsTest", suiteName = "PhonesPageTest",
             groups = {"negative"}, description = "Verifies that 'Phones' row does not contain laptop items.")
     public void verifyThatPhonesRowDoesNotContainLaptops() throws MalformedURLException {
-        ResourceBundle resourceBundleLaptops = ResourceBundle.getBundle("laptops");
 
-        List<String> actualPhoneHrefModelsList = new PhonesPage()
-                .getPhoneHrefModelsList();
-        new LaptopsPage();
-        List<String> unExpectedLaptopModelsList = LaptopsPage
-                .getLaptopModelsListInResourceBundle();
-
+        List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList();
+        List<String> unExpectedLaptopModelsList = new HomePage().getLaptopModelsListInResourceBundle();
         String errorMessageIfTestFails = "The 'Phones' row contain unexpected laptop item/ items";
 
         AssertJUnit.assertFalse(errorMessageIfTestFails, actualPhoneHrefModelsList.contains(unExpectedLaptopModelsList));
@@ -72,13 +80,9 @@ public class PhonesPageTest extends RequiredConditions {
     @Test(testName = "PhonesRowContainerDoesNotContainMonitorItemsTest", suiteName = "PhonesPageTest",
             groups = {"negative"}, description = "Verifies that 'Phones' row does not contain monitor items.")
     public void verifyThatPhonesRowDoesNotContainMonitors() throws MalformedURLException {
-        ResourceBundle resourceBundleMonitors = ResourceBundle.getBundle("monitors");
 
-        List<String> actualPhoneHrefModelsList = new PhonesPage()
-                .getPhoneHrefModelsList();
-        List<String> unExpectedMonitorModelsList = new MonitorsPage()
-                .getMonitorModelsListInResourceBundle();
-
+        List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList();
+        List<String> unExpectedMonitorModelsList = new HomePage().getMonitorModelsListInResourceBundle();
         String errorMessageIfTestFails = "The 'Phones' row contains unexpected monitor item/ items";
 
         AssertJUnit.assertFalse(errorMessageIfTestFails, actualPhoneHrefModelsList.contains(unExpectedMonitorModelsList));
@@ -102,12 +106,11 @@ public class PhonesPageTest extends RequiredConditions {
     @Parameters("browser")
     @Test(testName = "Phone1PriceCheckTest", suiteName = "PhonesPageTest",
             groups = {"positive"}, description = "Verifies phones' prices are equal to the prices declared in the phones' resource bundle")
-    public void verifyThatPhonesLinkSideMenuNavigatesToPhonesRow() throws MalformedURLException {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("VisibleContent", Locale.US);
+    public void verifyThatThePhone1PriceIsDisplayedAsInResourceBundle() throws MalformedURLException {
         ResourceBundle resourceBundlePhone1 = ResourceBundle.getBundle("phone1");
 
         String actualPhone1Price = new PhonesPage().getPhonePrice(0);
-        String expectedPhone1Price = resourceBundlePhone1.getString("phonePrice");
+        String expectedPhone1Price = resourceBundlePhone1.getString("phonePriceDollarUSA");
 
         String errorMessageIfTestFails = "The phone1's price is not as expected or isn't displayed.";
 
