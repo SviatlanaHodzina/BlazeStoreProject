@@ -4,6 +4,8 @@ The website project was received as a test task and currently it is under the de
 
 Testing is in the process.
 
+Here I use data Resource Bundles as Data Bases.
+
 Given the site https://www.demoblaze.com/index.html
 
    It is required:
