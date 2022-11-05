@@ -11,20 +11,19 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.MalformedURLException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static org.openqa.selenium.By.xpath;
 import static pages.HomePage.*;
+import static utils.ResourceBundleManagerClass.getMonitorModelsListInResourceBundle;
 
 public class MonitorsPage extends AbstractPage {
 
     public final Logger logger = LogManager.getRootLogger();
 
-    public final static String MONITOR_ITEM_MODEL_LIST_ELEMENT_XPATH = "//div[@class='card-block']//a[contains(text(),'%s')]";
+    final static String ADD_TO_CART_BUTTON_ELEMENT_XPATH = "//*[@id='tbodyid']//a[@onclick='addToCart(%d)']";
 
     @FindBy(how = How.XPATH, using = PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH)
     private List<WebElement> monitorItemsList;
@@ -111,5 +110,28 @@ public class MonitorsPage extends AbstractPage {
         logger.info("The description of the monitor index" + monitorItemIndexInTheList + "in the list: "
                 + monitorDescriptionList.get(monitorItemIndexInTheList).getAttribute("textContent"));
         return monitorDescriptionList.get(monitorItemIndexInTheList).getAttribute("textContent");
+    }
+
+    public MonitorsPage openAMonitorModelPage(String monitorModelName) throws MalformedURLException {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.visibilityOfElementLocated
+                        (xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, monitorModelName)))).click();
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until((ExpectedConditions.visibilityOfElementLocated
+                        (xpath(format(PRODUCT_ITEM_PAGE_MODEL_TITLE_ELEMENT_XPATH, monitorModelName)))));
+        return new MonitorsPage();
+    }
+
+    public PhonesPage pushAddToCartButton(int orderIndex) throws MalformedURLException {
+        WebElement addToCart = driver.findElement(xpath(format(ADD_TO_CART_BUTTON_ELEMENT_XPATH, orderIndex)));
+        addToCart.click();
+        return new PhonesPage();
+    }
+
+    public PhonesPage acceptAlertOnAddToCart() throws MalformedURLException {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.alertIsPresent()).accept();
+        logger.info("Alert window with the confirmation message of adding a product to a cart is accepted");
+        return new PhonesPage();
     }
 }
