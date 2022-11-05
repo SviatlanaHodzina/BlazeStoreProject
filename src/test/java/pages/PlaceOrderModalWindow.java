@@ -57,7 +57,7 @@ public class PlaceOrderModalWindow extends AbstractPage {
 
     public int getTotalPriceOnTopOfPlaceOrderWindow() {
         return Integer.parseInt(driver.findElement(xpath(PLACE_ORDER_WINDOW_TOTAL_PRICE_ELEMENT_XPATH))
-                .getAttribute("textContent"));
+                .getAttribute("textContent").replace("Total: ", ""));
     }
 
     public PlaceOrderModalWindow inputName(Customer customer) {
