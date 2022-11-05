@@ -15,8 +15,6 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import webdriver.WebDriverConnector;
 
-import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -25,47 +23,60 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.lang.String.format;
+import static org.apache.commons.io.FilenameUtils.concat;
 import static org.openqa.selenium.By.xpath;
-import static pages.LaptopsPage.LAPTOP_ITEM_MODEL_LIST_ELEMENT_XPATH;
-import static pages.MonitorsPage.MONITOR_ITEM_MODEL_LIST_ELEMENT_XPATH;
-import static pages.PhonesPage.*;
 
+//methods for carousel-slides of items are not implemented yet
 public class HomePage extends AbstractPage {
     public static final Logger logger = LogManager.getRootLogger();
 
-    //methods for carousel-slides of items are not implemented yet
+    public static int i;//min index of the product
+    public static int j;//max index of the product
+
     final static String BLAZE_PRODUCT_STORE_URL = "https://www.demoblaze.com/";
     public final static String PATHNAME_PAGE = "/prod.html";
     final static String HOME_PAGE_NAVIGATING_MENU_ELEMENT_XPATH = "//*[@id='narvbarx']";
     public final static String PRODUCT_CATEGORIES_CONTAINER_ON_HOME_PAGE_ELEMENT_XPATH = "//*[@id='contcont']";
     public final static String LOGO_STORE_TITLE_ON_HOME_PAGE_ELEMENT_XPATH = "//*[@id='nava']//text()";
     public final static String HOME_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@href,'index.html')]";
+
     public final static String CONTACT_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@data-target,'#exampleModal')]";
     public final static String CONTACT_MODAL_WINDOW_SHOW_ELEMENT_XPATH = "//*[contains(@id,'exampleModal') and contains (@class,'modal fade show')]";
+
     public final static String ABOUT_US_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@data-target,'videoModal')]";
     public final static String ABOUT_US_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH = "//*[@id='videoModal']//*[@class='modal-content']";
     public final static String ABOUT_US_MODAL_WINDOW_TITLE_ELEMENT_XPATH = "//*[@id='videoModalLabel']";
+
     public final static String CART_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@href,'cart.html')]";
     public final static String CART_PAGE_WRAPPER_ELEMENT_XPATH = "//*[@id='page-wrapper']";
+
     public final static String LOG_IN_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@data-target,'logInModal')]";
     public final static String LOG_IN_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH = "//*[contains(@id,'logInModal') and contains(@style,'display: block;')]//*[@class='modal-content']";
     public final static String LOG_IN_PAGE_TITLE_ELEMENT_XPATH = "//*[@id='logInModalLabel']";
+
     final static String SIGN_UP_LINK_IN_NAVIGATING_MENU_ELEMENT_XPATH = "//a[contains(@class,'nav-link') and contains(@data-target,'signInModal')]";
     public final static String SIGN_UP_MODAL_POPPED_UP_WINDOW_ELEMENT_XPATH = "//*[contains(@id,'signInModal') and contains(@class,'modal fade show')]//*[@class='modal-content']";
+
     public final static String PRODUCT_CONTAINER_ELEMENT_XPATH = "//div[@id='tbodyid']";
     public final static String PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH = "//div[@id='tbodyid']/div";
     public final static String PRODUCT_ITEM_MODEL_ELEMENT_XPATH = "//div[@class='card-block']//a";
+    public final static String PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH = "//div[@class='card-block']//a[contains(text(),'%s')]";
     public final static String PRODUCT_ITEM_PRICE_ELEMENT_XPATH = "//div[@class='card-block']//h5";
     public final static String PRODUCT_ITEM_DESCRIPTION_ELEMENT_XPATH = "//div[@class='card-block']//p";
+
+    final static String PRODUCT_ITEM_PAGE_MODEL_TITLE_ELEMENT_XPATH = "//div[@id='tbodyid']/h2[contains(text(),'%s')]";
+    final static String PRODUCT_ITEM_PAGE_PRICE_ELEMENT_XPATH = "//div[@id='tbodyid']/h3[contains(text(),'%s')]";
+    final static String PRODUCT_ITEM_PAGE_TAX_ELEMENT_XPATH = "//div[@id='tbodyid']/h3/small[contains(text(),'%s')]";
+    final static String PRODUCT_ITEM_PAGE_DESCRIPTION_ELEMENT_XPATH = "//*[@id='more-information']/p[contains(text(),'%s')]";
+
     public final static String CATEGORIES_CONTAINER_LINK_0N_SIDE_MENU_ELEMENT_XPATH = "//*[@id='cat']";
     public final static String PHONES_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH = "//*[contains(@id,'itemc') and contains(text(),'%s')]";
     public final static String MONITORS_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH = "//*[contains(@id,'itemc') and contains(text(),'%s')]";
     public final static String LAPTOPS_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH = "//*[contains(@id,'itemc') and contains(text(),'%s')]";
+
 
     @FindBy(how = How.TAG_NAME, using = "img")
     public static List<WebElement> imageList;
@@ -150,38 +161,39 @@ public class HomePage extends AbstractPage {
     }
 
     public PhonesPage openPhonesLinkOnSideMenu(String phone, List<String> laptops, List<String> monitors) throws MalformedURLException {
-
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.elementToBeClickable
                         (xpath(format(PHONES_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH, phone)))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(LAPTOP_ITEM_MODEL_LIST_ELEMENT_XPATH, laptops)))));
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, laptops)))));
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(MONITOR_ITEM_MODEL_LIST_ELEMENT_XPATH, monitors)))));
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, monitors)))));
         logger.info("You've been navigated to 'Phones' page");
         return new PhonesPage();
     }
 
-    public LaptopsPage openLaptopsLinkOnSideMenu(String laptops) throws MalformedURLException {
+    public LaptopsPage openLaptopsLinkOnSideMenu(String laptops, List<String> phones, List<String> monitors) throws MalformedURLException {
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.elementToBeClickable
                         (xpath(format(LAPTOPS_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH, laptops)))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.attributeContains(xpath(PRODUCT_CONTAINER_ELEMENT_XPATH),
-                        "outerText", String.valueOf(getLaptopModelsListInResourceBundle())));
-        logger.info("You've been navigated to 'Laptops' row");
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, phones)))));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, monitors)))));
+        logger.info("You've been navigated to 'Laptops' page");
         return new LaptopsPage();
     }
 
-    public MonitorsPage openMonitorsLinkOnSideMenu(String monitors) throws MalformedURLException {
+    public MonitorsPage openMonitorsLinkOnSideMenu(String monitors, List<String> phones, List<String> laptops) throws MalformedURLException {
         ResourceBundle resourceBundlePhones = ResourceBundle.getBundle("monitors");
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.elementToBeClickable
                         (xpath(format(MONITORS_CATEGORY_LINK_0N_SIDE_MENU_ELEMENT_XPATH, monitors)))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
-                .until(ExpectedConditions.attributeContains(xpath(PRODUCT_CONTAINER_ELEMENT_XPATH),
-                        "outerText", String.valueOf(getLaptopModelsListInResourceBundle())));
-        logger.info("You've been navigated to 'Laptops' row");
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, phones)))));
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until((ExpectedConditions.invisibilityOfElementLocated(xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, laptops)))));
+        logger.info("You've been navigated to 'Monitors' page");
         return new MonitorsPage();
     }
 
@@ -229,59 +241,5 @@ public class HomePage extends AbstractPage {
                 }
             }
         }
-    }
-
-    public static List<String> getPhoneModelsListInResourceBundle() {
-        ResourceBundle resourceBundlePhones = ResourceBundle.getBundle("phones");
-        Enumeration<String> phoneKeys = resourceBundlePhones.getKeys();
-        List<String> phoneKeysList = new ArrayList<>();
-        while (phoneKeys.hasMoreElements()) {
-            String phoneKey = phoneKeys.nextElement();
-            String phoneValue = resourceBundlePhones.getString(phoneKey);
-            phoneKeysList.add(phoneValue);
-        }
-        return phoneKeysList;
-    }
-
-    public static List<String> getLaptopModelsListInResourceBundle() {
-        ResourceBundle resourceBundleLaptops = ResourceBundle.getBundle("laptops");
-        Enumeration<String> laptopKeys = resourceBundleLaptops.getKeys();
-        List<String> laptopKeysList = new ArrayList<>();
-        while (laptopKeys.hasMoreElements()) {
-            String laptopKey = laptopKeys.nextElement();
-            String laptopValue = resourceBundleLaptops.getString(laptopKey);
-            laptopKeysList.add(laptopValue);
-        }
-        return laptopKeysList.stream().sorted().collect(Collectors.toList());
-    }
-
-    public static List<String> getMonitorModelsListInResourceBundle() {
-        ResourceBundle resourceBundleMonitors = ResourceBundle.getBundle("monitors");
-        Enumeration<String> monitorKeys = resourceBundleMonitors.getKeys();
-        List<String> monitorKeysList = new ArrayList<>();
-        while (monitorKeys.hasMoreElements()) {
-            String monitorKey = monitorKeys.nextElement();
-            String monitorValue = resourceBundleMonitors.getString(monitorKey);
-            monitorKeysList.add(monitorValue);
-        }
-        return monitorKeysList.stream().sorted().collect(Collectors.toList());
-    }
-
-    public static Map<String, Integer> getPhoneModelsPriceMapInResourceBundle() {
-        ResourceBundle resourceBundlePhonePrices = ResourceBundle.getBundle("PhonesPriceListDollarUSA");
-        ResourceBundle resourceBundlePhones = ResourceBundle.getBundle("phones");
-        Enumeration<String> phonePriceKeys = resourceBundlePhonePrices.getKeys();
-        Enumeration<String> phoneKeys = resourceBundlePhonePrices.getKeys();
-        Map<String, Integer> phoneKeysMap = new HashMap<>();
-        while (phonePriceKeys.hasMoreElements()) {
-            while (phoneKeys.hasMoreElements()) {
-                String pricePhoneKey = phonePriceKeys.nextElement();
-                String modelPhoneKey = phoneKeys.nextElement();
-                int phonePriceValue = Integer.parseInt((resourceBundlePhonePrices.getString(pricePhoneKey)).replace("$", ""));
-                String phoneModelKey = resourceBundlePhones.getString(modelPhoneKey);
-                phoneKeysMap.put(phoneModelKey, phonePriceValue);
-            }
-        }
-        return phoneKeysMap;
     }
 }
