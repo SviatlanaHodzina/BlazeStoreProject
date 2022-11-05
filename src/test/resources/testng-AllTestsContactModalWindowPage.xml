@@ -1,9 +1,0 @@
-<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-
-<suite name="AllTestsContactModalWindowPage" thread-count="15" verbose="1">
-    <test name="AllTestsContactModalWindowPage">
-        <classes>
-            <class name="tests.ContactModalWindowPageTest"/>
-        </classes>
-    </test>
-</suite>
