@@ -23,14 +23,12 @@ import java.util.stream.Collectors;
 import static java.lang.String.format;
 import static org.openqa.selenium.By.xpath;
 import static pages.HomePage.*;
-import static pages.LaptopsPage.LAPTOP_ITEM_MODEL_LIST_ELEMENT_XPATH;
-import static pages.MonitorsPage.MONITOR_ITEM_MODEL_LIST_ELEMENT_XPATH;
+import static utils.ResourceBundleManagerClass.getPhoneModelsListInResourceBundle;
 
 public class PhonesPage extends AbstractPage {
     public final Logger logger = LogManager.getRootLogger();
 
-    public final static String PHONE_ITEM_MODEL_LIST_ELEMENT_XPATH = "//div[@class='card-block']//a[contains(text(),'%s')]";
-    public final static String PRODUCT_ITEM_MODEL_PAGE_TITLE_ELEMENT_XPATH = "//div[@id='tbodyid']/h2[contains(text(),'%s')]";
+    final static String ADD_TO_CART_BUTTON_ELEMENT_XPATH = "//*[@id='tbodyid']//a[@onclick='addToCart(%d)']";
 
     @FindBy(how = How.XPATH, using = PRODUCT_ITEM_IN_A_ROW_ELEMENT_XPATH)
     public static List<WebElement> phoneItemsList;
@@ -43,7 +41,6 @@ public class PhonesPage extends AbstractPage {
 
     @FindBy(how = How.XPATH, using = PRODUCT_ITEM_DESCRIPTION_ELEMENT_XPATH)
     private static List<WebElement> phoneDescriptionList;
-
 
     public PhonesPage() throws MalformedURLException {
         super();
@@ -142,15 +139,27 @@ public class PhonesPage extends AbstractPage {
         return phoneDescriptionList.get(phoneItemIndexInTheList).getAttribute("textContent");
     }
 
-    public Phone5Page openAPhoneModelPage(String phoneModelName) throws MalformedURLException {
+    public PhonesPage openAPhoneModelPage(String phoneModelName) throws MalformedURLException {
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until(ExpectedConditions.visibilityOfElementLocated
-                        (xpath(format(PHONE_ITEM_MODEL_LIST_ELEMENT_XPATH, phoneModelName)))).click();
+                        (xpath(format(PRODUCT_ITEM_MODEL_LIST_ELEMENT_XPATH, phoneModelName)))).click();
         new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
                 .until((ExpectedConditions.visibilityOfElementLocated
-                        (xpath(format(PRODUCT_ITEM_MODEL_PAGE_TITLE_ELEMENT_XPATH, phoneModelName)))));
-        logger.info("Phone1 page is opened");
-        return new Phone5Page();
+                        (xpath(format(PRODUCT_ITEM_PAGE_MODEL_TITLE_ELEMENT_XPATH, phoneModelName)))));
+        return new PhonesPage();
+    }
+
+    public PhonesPage pushAddToCartButton(int orderIndex) throws MalformedURLException {
+        WebElement addToCart = driver.findElement(xpath(format(ADD_TO_CART_BUTTON_ELEMENT_XPATH, orderIndex)));
+        addToCart.click();
+        return new PhonesPage();
+    }
+
+    public PhonesPage acceptAlertOnAddToCart() throws MalformedURLException {
+        new WebDriverWait(driver, Duration.ofSeconds(WAIT_TIMEOUT_SECONDS))
+                .until(ExpectedConditions.alertIsPresent()).accept();
+        logger.info("Alert window with the confirmation message of adding a product to a cart is accepted");
+        return new PhonesPage();
     }
 
     public static int getCountOfBrokenImages() throws IOException {
