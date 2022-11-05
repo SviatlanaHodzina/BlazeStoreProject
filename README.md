@@ -1,6 +1,6 @@
 # BlazeStoreProject
 
-The website project is under the development.
+The website project was received as a test task and currently it is under the development.
 
 Testing is in the process.
 
