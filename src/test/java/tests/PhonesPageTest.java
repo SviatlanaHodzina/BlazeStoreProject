@@ -12,10 +12,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.testng.AssertJUnit.*;
-import static pages.HomePage.*;
+import static utils.ResourceBundleManagerClass.*;
 
 //the products' descriptions should be implemented as technical specifications with appropriate content
-//currency sign ($,€,£,¥ etc should be placed in DOM separately from their value)
+//currency signs ($,€,£,¥ etc) should be placed in DOM separately from their values)
 public class PhonesPageTest extends RequiredConditions {
     @Parameters("browser")
     @BeforeTest
@@ -33,7 +33,7 @@ public class PhonesPageTest extends RequiredConditions {
     public void verifyThatPhonesLinkSortsTheProductsByTheCategoryPhones() throws MalformedURLException {
         List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList()
                 .stream().sorted().collect(Collectors.toList());
-        List<String> expectedPhoneModelsList = new HomePage().getPhoneModelsListInResourceBundle()
+        List<String> expectedPhoneModelsList = getPhoneModelsListInResourceBundle()
                 .stream().sorted().collect(Collectors.toList());
 
         String errorMessageIfTestFails = "The 'Phones' link does not sort the products by the category 'Phones', but contains other product's category.";
@@ -47,7 +47,7 @@ public class PhonesPageTest extends RequiredConditions {
             "in Resource Bundle (analogue of data base)")
     public void verifyThatPhonesPriceListIsConformedWithResourceBundle() throws MalformedURLException {
         Map<String, Integer> actualPhonesPriceList = new PhonesPage().getPhoneModelsPriceMap();
-        Map<String, Integer> expectedPhonesPriceList = new HomePage().getPhoneModelsPriceMapInResourceBundle();
+        Map<String, Integer> expectedPhonesPriceList = getPhoneModelsPriceMapInResourceBundle();
         String errorMessageIfTestFails = "The 'Phones price list' is not conformed with the one displayed in Resource Bundle.";
 
         assertEquals(errorMessageIfTestFails, expectedPhonesPriceList, actualPhonesPriceList);
@@ -58,7 +58,7 @@ public class PhonesPageTest extends RequiredConditions {
             groups = {"Positive"}, description = "Verifies that 'Phones' row size equals size of phones in resource Bundle.")
     public void verifyThatPhonesRowEqualsTheSizeOfPhoneRowInResourceBundle() throws MalformedURLException {
         int actualPhoneRowSize = new PhonesPage().getSizeOfPhonesList();
-        int expectedPhoneRowSize = new HomePage().getPhoneModelsListInResourceBundle().size();
+        int expectedPhoneRowSize = getPhoneModelsListInResourceBundle().size();
         String errorMessageIfTestFails = "The 'Phones' row is not equal to the size of phone models in Resource bundle.";
 
         assertEquals(errorMessageIfTestFails, expectedPhoneRowSize, actualPhoneRowSize);
@@ -70,7 +70,7 @@ public class PhonesPageTest extends RequiredConditions {
     public void verifyThatPhonesRowDoesNotContainLaptops() throws MalformedURLException {
 
         List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList();
-        List<String> unExpectedLaptopModelsList = new HomePage().getLaptopModelsListInResourceBundle();
+        List<String> unExpectedLaptopModelsList = getLaptopModelsListInResourceBundle();
         String errorMessageIfTestFails = "The 'Phones' row contain unexpected laptop item/ items";
 
         AssertJUnit.assertFalse(errorMessageIfTestFails, actualPhoneHrefModelsList.contains(unExpectedLaptopModelsList));
@@ -82,7 +82,7 @@ public class PhonesPageTest extends RequiredConditions {
     public void verifyThatPhonesRowDoesNotContainMonitors() throws MalformedURLException {
 
         List<String> actualPhoneHrefModelsList = new PhonesPage().getPhoneHrefModelsList();
-        List<String> unExpectedMonitorModelsList = new HomePage().getMonitorModelsListInResourceBundle();
+        List<String> unExpectedMonitorModelsList = getMonitorModelsListInResourceBundle();
         String errorMessageIfTestFails = "The 'Phones' row contains unexpected monitor item/ items";
 
         AssertJUnit.assertFalse(errorMessageIfTestFails, actualPhoneHrefModelsList.contains(unExpectedMonitorModelsList));
@@ -110,7 +110,7 @@ public class PhonesPageTest extends RequiredConditions {
         ResourceBundle resourceBundlePhone1 = ResourceBundle.getBundle("phone1");
 
         String actualPhone1Price = new PhonesPage().getPhonePrice(0);
-        String expectedPhone1Price = resourceBundlePhone1.getString("phonePriceDollarUSA");
+        String expectedPhone1Price = resourceBundlePhone1.getString("phonePrice");
 
         String errorMessageIfTestFails = "The phone1's price is not as expected or isn't displayed.";
 
