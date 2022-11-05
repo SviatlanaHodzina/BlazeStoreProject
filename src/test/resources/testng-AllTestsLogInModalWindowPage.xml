@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="AllTestsLogInModalWindowPage" verbose="1">
+    <test name="AllTestsLogInModalWindowPage">
+        <classes>
+            <class name="tests.LogInModalWindowPageTest"/>
+        </classes>
+    </test>
+</suite>
