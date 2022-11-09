@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import pages.CartPage;
 import pages.HomePage;
 import pages.PlaceOrderModalWindow;
+import pages.PurchaseInfoConfirmationPopUpWindowPage;
 import storedataservice.CustomerAccountCompiler;
 import utils.ResourceBundleManagerClass;
 
@@ -16,26 +17,23 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertTrue;
 import static utils.ResourceBundleManagerClass.*;
 
 //for the correct purchasing products feature Customer Account Page should be implemented
 //here are preliminary tests without implemented Customer Account Page
 public class PlacingOrdersTest extends RequiredConditions {
+    Customer account = CustomerAccountCompiler.withCredentialFromProperty();
+
     @Parameters("browser")
     @BeforeTest
-    public void logInExistingAccount() throws MalformedURLException {
-        Customer account = CustomerAccountCompiler.withCredentialFromProperty();
+    public void logInAndAddProductsToACart() throws MalformedURLException {
+
+        ResourceBundle resourceBundleVisibleContent = ResourceBundle.getBundle("VisibleContent", Locale.US);
         new HomePage()
                 .openPage()
                 .openLogInModalWindowOnTopMenu()
                 .logIn(account);
-    }
-
-    @Parameters("browser")
-    @Test(testName = "TotalPriceOfOrderedProductListInPlaceOrderFormTest", suiteName = "PlacingOrdersTest",
-            groups = {"positive"}, description = "Verifies that a total price displayed in Place Order form is equal the price displayed in a cart with ordered products")
-    public void verifyThatTotalPriceDisplayedInPlaceOrderFormIsEqualToThePriceDisplayedInACart() throws MalformedURLException {
-        ResourceBundle resourceBundleVisibleContent = ResourceBundle.getBundle("VisibleContent", Locale.US);
 
         Enumeration<String> productQueries = ResourceBundle.getBundle("queries").getKeys();
 
@@ -67,6 +65,13 @@ public class PlacingOrdersTest extends RequiredConditions {
 
             }
         }
+    }
+
+    @Parameters("browser")
+    @Test(testName = "TotalPriceOfOrderedProductListInPlaceOrderFormTest", suiteName = "PlacingOrdersTest",
+            groups = {"positive"}, description = "Verifies that a total price displayed in Place Order form is equal the price displayed in a cart with ordered products")
+    public void verifyThatTotalPriceDisplayedInPlaceOrderFormIsEqualToThePriceDisplayedInACart() throws MalformedURLException {
+
         new HomePage().openCartPage().placeOrder();
         int expectedTotalPriceDisplayedInACart = new CartPage().getTotalPriceDisplayedInACart();
         int actualTotalPriceDisplayedInPlaceOrderForm = new PlaceOrderModalWindow().getTotalPriceOnTopOfPlaceOrderWindow();
@@ -74,5 +79,52 @@ public class PlacingOrdersTest extends RequiredConditions {
         String errorMessageIfTestFails = "Actual Total Price displayed in a cart isn't equal to the sum of the ordered products prices from resource bundle.";
 
         assertEquals(errorMessageIfTestFails, expectedTotalPriceDisplayedInACart, actualTotalPriceDisplayedInPlaceOrderForm);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "PurchaseMessageConfirmationDisplayTest", suiteName = "PlacingOrdersTest",
+            groups = {"positive"}, description = "Verifies that a purchase message confirmation is displayed.")
+    public void verifyPurchaseMessageConfirmationDisplay() throws MalformedURLException {
+
+        boolean purchaseConfirmationMessageIsDisplayed = new HomePage().openCartPage()
+                .placeOrder()
+                .purchaseTheOrder(account)
+                .orderInfoContentOnPurchaseConfirmationWindowPageIsDisplayed();
+
+        String errorMessageIfTestFails = "Purchase message confirmation isn't displayed.";
+
+        assertTrue(errorMessageIfTestFails, purchaseConfirmationMessageIsDisplayed);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "PurchaseMessageConfirmationContextTest", suiteName = "PlacingOrdersTest",
+            groups = {"positive"}, description = "Verifies that a relevant purchase message confirmation context is displayed")
+    public void verifyAppropriateMessageConfirmationContextDisplay() throws MalformedURLException {
+        ResourceBundle resourceBundleVisibleContent = ResourceBundle.getBundle("VisibleContent", Locale.US);
+
+        String actualMessageConfirmationContextDisplayed = new HomePage().openCartPage()
+                .placeOrder()
+                .purchaseTheOrder(account)
+                .getPurchaseMessageConfirmationContextDisplayed();
+        String expectedMessageConfirmationContextDisplayed = resourceBundleVisibleContent.getString("PurchaseConfirmationMessageContext");
+
+        String errorMessageIfTestFails = "Purchase message confirmation isn't displayed.";
+
+        assertEquals(errorMessageIfTestFails, expectedMessageConfirmationContextDisplayed, actualMessageConfirmationContextDisplayed);
+    }
+
+    @Parameters("browser")
+    @Test(testName = "ConformanceOfDisplayedOrderInfoListToTheInputOneTest", suiteName = "PlacingOrdersTest",
+            groups = {"positive"}, description = "Verifies a conformance of the displayed order info list to the input order info list")
+    public void verifyConformaceOfDisplayedOrderInfoListToTheInputOrderInfoList() throws MalformedURLException {
+        List<String> actualDisplayedOrderInfoList = new HomePage().openCartPage()
+                .placeOrder()
+                .purchaseTheOrder(account)
+                .getDisplayedOrderInfoListWithoutIDOrder();
+        List<String> expectedDisplayedOrderInfoList = new PlaceOrderModalWindow().getInputOrderInfoListWithCurrentDateWithoutIDOrder(account);
+
+        String errorMessageIfTestFails = "The displayed order info list in confirmation doesn't conforms to the input order info list";
+
+        assertEquals(errorMessageIfTestFails, expectedDisplayedOrderInfoList, actualDisplayedOrderInfoList);
     }
 }
