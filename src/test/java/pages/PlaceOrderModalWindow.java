@@ -12,7 +12,14 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.net.MalformedURLException;
+import java.text.DateFormat;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.time.Duration.ofSeconds;
 import static org.openqa.selenium.By.xpath;
@@ -23,7 +30,7 @@ public class PlaceOrderModalWindow extends AbstractPage {
 
     private final static String PLACE_ORDER_WINDOW_HEADER_ELEMENT_XPATH = "//*[@id='orderModalLabel']";
     private final static String PLACE_ORDER_WINDOW_TOTAL_PRICE_ELEMENT_XPATH = "//*[@id='totalm']";
-    private final static String PLACE_ORDER_FORM_NAME_INPUT_ELEMENT_XPATH = "//name[@id='name']";
+    private final static String PLACE_ORDER_FORM_NAME_INPUT_ELEMENT_XPATH = "//input[@id='name']";
     private final static String PLACE_ORDER_FORM_COUNTRY_INPUT_ELEMENT_XPATH = "//input[@id='country']";
     private final static String PLACE_ORDER_FORM_CITY_INPUT_ELEMENT_XPATH = "//input[@id='city']";
     private final static String PLACE_ORDER_FORM_CARD_INPUT_ELEMENT_XPATH = "//input[@id='card']";
@@ -145,6 +152,19 @@ public class PlaceOrderModalWindow extends AbstractPage {
                         (PLACE_ORDER_FORM_YEAR_INPUT_ELEMENT_XPATH), customer.getValidThruYear()));
         logger.info("You have input a 'valid thru' year of a customer's credit card");
         return this;
+    }
+
+    public List<String> getInputOrderInfoListWithCurrentDateWithoutIDOrder(Customer customer) {
+        String formattedCurrentDate = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String currentDateString = DateFormat.getInstance().format(formattedCurrentDate);
+        List<String> orderInfo = new ArrayList<>();
+        orderInfo.add(String.valueOf(getTotalPriceOnTopOfPlaceOrderWindow()));
+        orderInfo.add(customer.getCreditCard());
+        orderInfo.add(customer.getFirstName() + " " + customer.getSurname());
+        orderInfo.add(currentDateString);
+        return orderInfo.stream()
+                .flatMap(String::lines)
+                .collect(Collectors.toList());
     }
 
     public CartPage closePlaceOrderWindowInTheFooter() throws MalformedURLException {
